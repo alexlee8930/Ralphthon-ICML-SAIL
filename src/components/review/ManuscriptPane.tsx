@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useRecoilValue } from "recoil";
 import { ExternalLink, X } from "lucide-react";
-import { INSPECTOR_MAX, INSPECTOR_MIN, useUiStore } from "@/lib/store";
+import { INSPECTOR_MAX, INSPECTOR_MIN, manuscriptHighlightState, useUiStore } from "@/lib/store";
 import { cn } from "@/lib/cn";
 import type { LoopVersion } from "@/api/reviewLoop";
 
@@ -12,13 +13,70 @@ import type { LoopVersion } from "@/api/reviewLoop";
  * inspector width (persisted), resizable via the left-edge drag handle within
  * [INSPECTOR_MIN, INSPECTOR_MAX]; the header X closes the pane.
  */
+/** Wrap every occurrence of each phrase in a paragraph with <mark>. Exact
+ *  substring matching via indexOf loops (no regex, so no escaping bugs);
+ *  matches are non-overlapping and the earliest split wins. Returns the
+ *  paragraph as plain string when nothing matches. */
+function highlightPhrases(paragraph: string, phrases: string[]): ReactNode {
+  const spans: Array<{ start: number; end: number }> = [];
+  for (const phrase of phrases) {
+    if (!phrase) continue;
+    let from = 0;
+    for (;;) {
+      const at = paragraph.indexOf(phrase, from);
+      if (at === -1) break;
+      spans.push({ start: at, end: at + phrase.length });
+      from = at + phrase.length;
+    }
+  }
+  if (spans.length === 0) return paragraph;
+
+  // Earliest start wins; on ties the longer match wins. Drop overlaps.
+  spans.sort((a, b) => a.start - b.start || b.end - a.end);
+  const kept: Array<{ start: number; end: number }> = [];
+  let lastEnd = 0;
+  for (const s of spans) {
+    if (s.start >= lastEnd) {
+      kept.push(s);
+      lastEnd = s.end;
+    }
+  }
+
+  const nodes: ReactNode[] = [];
+  let cursor = 0;
+  kept.forEach((s, i) => {
+    if (s.start > cursor) nodes.push(paragraph.slice(cursor, s.start));
+    nodes.push(
+      <mark key={i} className="rounded-sm bg-accent/15 px-0.5 text-text ring-1 ring-accent/30">
+        {paragraph.slice(s.start, s.end)}
+      </mark>,
+    );
+    cursor = s.end;
+  });
+  if (cursor < paragraph.length) nodes.push(paragraph.slice(cursor));
+  return nodes;
+}
+
 /** Dependency-free markdown-lite: #/##/### headings, --- rules, paragraphs.
  *  Enough to make pasted papers and the appended revision notes read like a
- *  manuscript instead of raw markup; everything else stays pre-wrapped. */
+ *  manuscript instead of raw markup; everything else stays pre-wrapped.
+ *  Attribution-evidence phrases (Recoil manuscriptHighlightState) render as
+ *  <mark> inside body paragraphs; the first match auto-scrolls into view. */
 function ManuscriptText({ text }: { text: string }) {
+  const highlight = useRecoilValue(manuscriptHighlightState);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // When the hovered feature changes, center the first rendered match.
+  useEffect(() => {
+    if (!highlight) return;
+    const first = rootRef.current?.querySelector("mark");
+    first?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [highlight]);
+
+  const phrases = highlight?.phrases ?? [];
   const blocks = text.split(/\n{2,}/);
   return (
-    <div className="flex flex-col gap-3 font-serif text-[15px] leading-relaxed text-text">
+    <div ref={rootRef} className="flex flex-col gap-3 font-serif text-[15px] leading-relaxed text-text">
       {blocks.map((block, i) => {
         const t = block.trim();
         if (t === "---") return <hr key={i} className="border-faint" />;
@@ -42,7 +100,7 @@ function ManuscriptText({ text }: { text: string }) {
           );
         return (
           <p key={i} className="whitespace-pre-wrap">
-            {block}
+            {phrases.length > 0 ? highlightPhrases(block, phrases) : block}
           </p>
         );
       })}

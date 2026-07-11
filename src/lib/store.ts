@@ -174,6 +174,13 @@ export function useUiStore() {
   };
 }
 
+
+/** Manuscript phrases to highlight (attribution evidence hover). Null = none. */
+export const manuscriptHighlightState = atom<{ feature: string; phrases: string[] } | null>({
+  key: "ui/manuscriptHighlight",
+  default: null,
+});
+
 /** Convenience setter used by keyboard shortcuts. */
 export function useToggleSidebar() {
   const set = useSetRecoilState(sidebarCollapsedState);

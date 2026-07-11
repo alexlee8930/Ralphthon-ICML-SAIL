@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useSetRecoilState } from "recoil";
 import {
   ArrowUp,
   Award,
@@ -14,7 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { isMacUA } from "@/lib/platform";
-import { useUiStore } from "@/lib/store";
+import { manuscriptHighlightState, useUiStore } from "@/lib/store";
 import {
   useLoopPaper,
   useLoopPapers,
@@ -22,6 +23,7 @@ import {
   useSubmitLoopPaper,
 } from "@/api/reviewLoopQueries";
 import { ManuscriptPane } from "@/components/review/ManuscriptPane";
+import { ReviewTabs } from "@/components/analysis/ReviewTabs";
 import type { CommentSeverity, LoopPaper, LoopVersion } from "@/api/reviewLoop";
 
 /**
@@ -241,6 +243,7 @@ function LoopView({ paperId }: { paperId: string }) {
           >
             {selected ? "Selected" : "In review"}
           </span>
+          <ReviewTabs paperId={paperId} />
           <div className="flex-1" />
           <button
             onClick={() => setInspectorOpen(!inspectorOpen)}
@@ -426,7 +429,7 @@ function ScoreHero({ version, delta }: { version: LoopVersion; delta: number | n
   );
 }
 
-function VersionRail({
+export function VersionRail({
   versions,
   shownVersion,
   onPick,
@@ -463,15 +466,46 @@ function VersionRail({
 
 function Attributions({ version }: { version: LoopVersion }) {
   const rows = [...version.score.attributions].sort((a, b) => b.weight - a.weight);
+  const setHighlight = useSetRecoilState(manuscriptHighlightState);
+  const { inspectorOpen } = useUiStore();
+  const anyEvidence = rows.some((a) => (a.evidence?.length ?? 0) > 0);
+
+  // Never leave a stale highlight behind when this card unmounts (navigation,
+  // version switch to a different page, etc.).
+  useEffect(() => () => setHighlight(null), [setHighlight]);
+
   return (
     <div className="rounded-card border border-border bg-surface shadow-card">
-      <div className="border-b border-faint px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-muted">
-        Why this score — feature attribution
+      <div className="flex items-center justify-between border-b border-faint px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-muted">
+        <span>Why this score — feature attribution</span>
+        {anyEvidence && inspectorOpen && (
+          <span className="text-[10px] normal-case tracking-normal text-muted">
+            hover a feature to see evidence
+          </span>
+        )}
       </div>
       <div className="divide-y divide-faint">
-        {rows.map((a) => (
-          <div key={a.feature} className="flex items-center gap-3 px-4 py-2">
-            <span className="w-44 shrink-0 text-[13px] text-text">{a.feature}</span>
+        {rows.map((a) => {
+          const hasEvidence = (a.evidence?.length ?? 0) > 0;
+          return (
+          <div
+            key={a.feature}
+            className={cn("flex items-center gap-3 px-4 py-2", hasEvidence && "cursor-default")}
+            onMouseEnter={
+              hasEvidence
+                ? () => setHighlight({ feature: a.feature, phrases: a.evidence! })
+                : undefined
+            }
+            onMouseLeave={hasEvidence ? () => setHighlight(null) : undefined}
+          >
+            <span
+              className={cn(
+                "w-44 shrink-0 text-[13px] text-text",
+                hasEvidence && "underline decoration-border decoration-dotted underline-offset-2",
+              )}
+            >
+              {a.feature}
+            </span>
             <div className="relative h-1.5 flex-1 rounded-full bg-surface-2">
               <div
                 className={cn(
@@ -492,7 +526,8 @@ function Attributions({ version }: { version: LoopVersion }) {
               {a.weight.toFixed(2)}
             </span>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

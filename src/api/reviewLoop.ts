@@ -30,8 +30,14 @@ export interface LoopScore {
   /** Papers scoring at or above this band read as award-similar → SELECT. */
   selectThreshold: number;
   gradeTier: "reject" | "poster" | "spotlight" | "oral" | "notable-top-5%";
-  /** S6: which features pushed the score up or down (weights sum ≈ ±1). */
-  attributions: Array<{ feature: string; weight: number }>;
+  /** S6: which features pushed the score up or down (weights sum ≈ ±1).
+   *  `evidence` = exact manuscript sentences that drove the feature
+   *  (input-attribution spans, resolved to sentences by the backend). */
+  attributions: Array<{ feature: string; weight: number; evidence?: string[] }>;
+  /** Mean activation summary per backbone layer block (12 blocks, 0-1) —
+   *  feeds the score-bottleneck visualization; the bottleneck sits after
+   *  block 8 (index 7) where the scalar score neuron is read out. */
+  layers: number[];
 }
 
 export type CommentSeverity = "major" | "minor" | "question";
@@ -146,6 +152,42 @@ function tierFor(score: number): LoopScore["gradeTier"] {
   return "reject";
 }
 
+/** Keyword map: which manuscript sentences count as evidence per feature. */
+const FEATURE_KEYWORDS: Record<string, RegExp> = {
+  "novelty of contribution": /propose|novel|new|we ask|contribution/i,
+  "clarity of writing": /abstract|section|we (study|present|show)/i,
+  "reproducibility detail": /seed|release|script|code|detail/i,
+  "figure quality": /figure|fig\.|plot|axis/i,
+  "empirical breadth": /benchmark|suite|task|dataset|experiment/i,
+  "ablation completeness": /ablation|isolat|remove|variant/i,
+  "theory rigor": /prop\.|theorem|assum|proof|guarantee/i,
+};
+
+/** Pull up to two exact sentences from the manuscript matching the feature. */
+function evidenceFor(text: string | undefined, feature: string): string[] {
+  if (!text) return [];
+  const re = FEATURE_KEYWORDS[feature];
+  if (!re) return [];
+  const sentences = text
+    .replace(/^#+ .*$/gm, "")
+    .split(/(?<=[.!?])\s+/)
+    .map((x) => x.trim())
+    .filter((x) => x.length > 30);
+  return sentences.filter((x) => re.test(x)).slice(0, 2);
+}
+
+/** Backbone activation summary per version — rises through the stack and
+ *  sharpens at the bottleneck block (index 7) as revisions improve. */
+function layersFor(round: number): number[] {
+  const boost = Math.min(round, 3) * 0.09;
+  return Array.from({ length: 12 }, (_, i) => {
+    const base = 0.25 + 0.045 * i;
+    const bottleneck = i === 7 ? 0.18 : 0;
+    const wobble = ((i * 37 + round * 13) % 10) / 100;
+    return Math.min(1, Math.round((base + bottleneck + boost + wobble) * 100) / 100);
+  });
+}
+
 function attributionsFor(round: number): LoopScore["attributions"] {
   // Early rounds: strong negative drivers; later rounds they shrink/flip.
   const negatives = [
@@ -244,7 +286,11 @@ function makeVersion(
       score,
       selectThreshold: SELECT_THRESHOLD,
       gradeTier: tierFor(score),
-      attributions: attributionsFor(round),
+      attributions: attributionsFor(round).map((a) => ({
+        ...a,
+        evidence: evidenceFor(manuscript.kind === "text" ? manuscript.text : undefined, a.feature),
+      })),
+      layers: layersFor(round),
     },
     comments: score >= SELECT_THRESHOLD ? [] : commentsFor(paperId, round, version),
   };
