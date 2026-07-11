@@ -17,6 +17,10 @@
  *   POST /api/loop/papers/:id/revise           → AI revision (new version + rescore + review)
  *   POST /api/loop/papers/:id/versions         → manual revision upload (multipart)
  * The backend returns a manuscript {kind, text|url, fileName} per version.
+ * Adapter v1 (2026-07-11) text-extracts PDF submissions server-side (pymupdf)
+ * and returns them as kind "text" — ManuscriptPane switches on `kind`, so
+ * these render as the text view. kind "pdf" + `url` stays for the mock and
+ * for a future PDF-serving endpoint (GET .../versions/:v/pdf).
  * Until then the mock below simulates the loop deterministically.
  */
 
@@ -42,6 +46,17 @@ export interface LoopScore {
 
 export type CommentSeverity = "major" | "minor" | "question";
 
+/** S1 (review head): one independent reviewer's take on a version. Three run
+ *  in parallel; the meta-review head (S3) synthesizes them. */
+export interface ReviewerReview {
+  id: string;
+  /** Display name — "Reviewer 1" style. */
+  reviewer: string;
+  /** ICML-style overall rating, 1–10. */
+  rating: number;
+  summary: string;
+}
+
 /** One AC-style review comment — rendered like an issue-tracker comment. */
 export interface ReviewComment {
   id: string;
@@ -54,18 +69,14 @@ export interface ReviewComment {
 }
 
 /** The manuscript a version was scored on. Text submissions carry the full
- *  text (AI revisions append a "Revision notes" section per round).
- *
- *  Real API note (adapter v1, 2026-07-11): PDF submissions are text-extracted
- *  server-side (pymupdf) and come back as kind "text" with the extracted
- *  full text — `url` is not provided yet, so the pane renders the text view.
- *  kind "pdf" + `url` stays supported for the mock and for a future
- *  PDF-serving endpoint. */
+ *  text (AI revisions append a "Revision notes" section per round). PDF
+ *  handling differs by backend — see the module header. */
 export interface LoopManuscript {
   kind: "text" | "pdf";
-  /** kind 'text': the full manuscript text. kind 'pdf': accumulated revision notes. */
+  /** kind 'text': the full manuscript text (for PDF submissions on the real
+   *  API: the server-extracted text). kind 'pdf' (mock): accumulated revision notes. */
   text?: string;
-  /** kind 'pdf' only. */
+  /** Original uploaded file name, when known. */
   fileName?: string;
   /** kind 'pdf' only — object URL (mock) or backend file URL. */
   url?: string;
@@ -80,6 +91,11 @@ export interface LoopVersion {
   /** The manuscript this version was scored on. */
   manuscript: LoopManuscript;
   score: LoopScore;
+  /** S1: the parallel per-reviewer reviews the meta-review synthesizes. */
+  reviews?: ReviewerReview[];
+  /** S3: the meta-review head's synthesis of the reviews — the AC narrative
+   *  the structured `comments` are extracted from. */
+  metaReview?: string;
   comments: ReviewComment[];
 }
 
@@ -107,7 +123,7 @@ export interface SubmitLoopPaperInput {
 // Mock simulation
 // ---------------------------------------------------------------------------
 
-import { loadStoredPapers, persistPaper } from "./loopStorage";
+import { deleteStoredPaper, loadStoredPapers, persistPaper } from "./loopStorage";
 
 const BASE = import.meta.env.VITE_RALPH_API_URL as string | undefined;
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -141,12 +157,114 @@ const ROUND_COMMENTS: Array<Array<[CommentSeverity, string, string]>> = [
     ["minor", "Writing", "Abstract still promises 'theoretical guarantees'; the body now (correctly) claims a scoped result."],
     ["question", "Figures", "Consider a summary figure comparing all three suites at a glance."],
   ],
+  [
+    ["minor", "Experiments", "Confidence intervals landed for two of three suites; add the third for completeness."],
+    ["minor", "Related work", "Discuss the concurrent work released after submission — a paragraph suffices."],
+    ["question", "Writing", "Should the intro's contribution ordering mirror §5's presentation order?"],
+  ],
+  [
+    ["minor", "Experiments", "A single aggregate confidence interval remains missing on the cross-suite figure."],
+    ["minor", "Writing", "One residual x̃ notation inconsistency in Appendix B."],
+  ],
 ];
 
+/** S1 review head output per round: [reviewer, rating 1–10, summary]. The
+ *  three reviewers run every round in parallel and converge as revisions land. */
+const ROUND_REVIEWS: Array<Array<[string, number, string]>> = [
+  [
+    ["Reviewer 1", 4, "The core idea is genuinely interesting and the writing is clear, but the central claim is not isolated from the auxiliary loss — without a head-only ablation I cannot attribute the gains."],
+    ["Reviewer 2", 5, "Solid contribution with a plausible mechanism. My main reservation is experimental rigor: single-seed results and a missing strong baseline make the tables hard to trust."],
+    ["Reviewer 3", 4, "The comparison omits the strongest recent baseline, and several figures are illegible at print size. The method may be sound, but the current evidence does not support the improvement claim."],
+  ],
+  [
+    ["Reviewer 1", 5, "The new head-only ablation addresses my main concern on two of three suites — completing suite C would settle attribution fully."],
+    ["Reviewer 2", 6, "Multi-seed tables and the added baseline resolve my biggest rigor concern. Prop. 2 still assumes stationary dynamics without saying so; scope it explicitly."],
+    ["Reviewer 3", 5, "Figures are fixed and the baseline is in. The contribution list now slightly overstates the theory result relative to what §5 proves."],
+  ],
+  [
+    ["Reviewer 1", 6, "Suite-C ablation completes the attribution story. What remains on my side is statistical: a confidence interval on the aggregate metric."],
+    ["Reviewer 2", 6, "The scoped Prop. 2 statement is now accurate. The abstract still promises slightly more theory than the body delivers."],
+    ["Reviewer 3", 6, "The revision materially improved the evidence. I'd like the cross-suite summary figure the authors deferred."],
+  ],
+  [
+    ["Reviewer 1", 7, "Confidence intervals landed for two of three suites — add the third and my concerns are closed."],
+    ["Reviewer 2", 7, "Abstract wording now matches §5. Consider discussing the concurrent work released after submission."],
+    ["Reviewer 3", 6, "The summary figure is in and reads well. Contribution ordering in the intro could still mirror §5's order."],
+  ],
+  [
+    ["Reviewer 1", 7, "Only the aggregate confidence interval on the cross-suite figure remains from my list."],
+    ["Reviewer 2", 8, "Concurrent work is now discussed fairly; my concerns are fully addressed."],
+    ["Reviewer 3", 7, "One residual notation inconsistency in Appendix B — otherwise this is a careful, complete paper."],
+  ],
+  [
+    ["Reviewer 1", 8, "The aggregate CI is in; the attribution and rigor stories are complete. I recommend selection."],
+    ["Reviewer 2", 8, "All concerns across five rounds are resolved with care. This is a strong, careful paper."],
+    ["Reviewer 3", 8, "The revision trajectory is exemplary — evidence now fully supports the claims."],
+  ],
+  [
+    ["Reviewer 1", 9, "Comprehensive and rigorous — among the strongest submissions in my batch."],
+    ["Reviewer 2", 9, "Every earlier issue is resolved with care. I recommend highlighting this work."],
+    ["Reviewer 3", 8, "A model revision trajectory; the final version is clearly award-quality."],
+  ],
+];
+
+const reviewsForRound = (paperId: string, round: number, version: number): ReviewerReview[] =>
+  ROUND_REVIEWS[Math.min(round, ROUND_REVIEWS.length - 1)].map(([reviewer, rating, summary], i) => ({
+    id: `${paperId}_v${version}_r${i}`,
+    reviewer,
+    rating,
+    summary,
+  }));
+
+/** The meta-review head needs accumulated rebuttal history (what the author
+ *  contested and actually fixed, per revision) — it only writes once this many
+ *  review turns have run. Before that, versions carry reviews but no synthesis. */
+export const META_REVIEW_MIN_TURNS = 5;
+
+/** S3: synthesize the meta-review from the actual loop history — issues
+ *  raised/resolved across rounds, the AI-revision record (changeNotes), and
+ *  the score trajectory. Returns undefined before enough turns accumulated. */
+function synthesizeMetaReview(versions: LoopVersion[], current: LoopVersion): string | undefined {
+  if (current.version < META_REVIEW_MIN_TURNS) return undefined;
+  const history = versions.filter((v) => v.version <= current.version);
+  const raised = history.reduce((n, v) => n + v.comments.length, 0);
+  const resolved = history.reduce(
+    (n, v) => n + v.comments.filter((c) => c.resolvedInVersion).length,
+    0,
+  );
+  const revisions = history.filter((v) => v.origin === "ai_revision").length;
+  const first = history[0].score.score;
+  const last = current.score.score;
+  const lastNote = current.changeNote ?? [...history].reverse().find((v) => v.changeNote)?.changeNote;
+  const open = current.comments.filter((c) => !c.resolvedInVersion).length;
+  const verdict =
+    last >= current.score.selectThreshold
+      ? "the committee places the paper in the award-similar band and recommends selection"
+      : `the committee holds the paper below the selection band (${current.score.selectThreshold}) pending the remaining items`;
+  return (
+    `Meta-review after ${current.version} review turns. Across the preceding rounds the committee raised ${raised} issues; ` +
+    `the authors rebutted or addressed ${resolved} of them over ${revisions} AI-assisted revisions, moving the score ${first} → ${last}. ` +
+    (lastNote
+      ? `Most recently the authors ${lastNote.charAt(0).toLowerCase()}${lastNote.slice(1).replace(/\.\s*$/, "")}. `
+      : "") +
+    (open > 0
+      ? `${open} narrower concern${open === 1 ? "" : "s"} remain${open === 1 ? "s" : ""} open below — `
+      : "No substantive concerns remain — ") +
+    `${verdict}.`
+  );
+}
+
+/** Attach the meta-review to the newest version once history allows it. */
+function attachMetaReview(paper: LoopPaper) {
+  const current = paper.versions[paper.versions.length - 1];
+  current.metaReview = synthesizeMetaReview(paper.versions, current);
+}
+
 function scoreForRound(round: number): number {
-  // v1 lands well below the band; each AI revision closes most of the gap and
-  // the third version crosses the selection threshold (3–4 round loop).
-  const trajectory = [64, 78, 91, 96];
+  // v1 lands well below the band and each revision closes part of the gap.
+  // Selection lands at v6 — after META_REVIEW_MIN_TURNS review turns, so the
+  // meta-review (which needs rebuttal history) exists before the loop ends.
+  const trajectory = [63, 69, 74, 79, 84, 91, 96];
   return trajectory[Math.min(round, trajectory.length - 1)];
 }
 
@@ -185,7 +303,7 @@ function evidenceFor(text: string | undefined, feature: string): string[] {
 /** Backbone activation summary per version — rises through the stack and
  *  sharpens at the bottleneck block (index 7) as revisions improve. */
 function layersFor(round: number): number[] {
-  const boost = Math.min(round, 3) * 0.09;
+  const boost = Math.min(round, 5) * 0.055;
   return Array.from({ length: 12 }, (_, i) => {
     const base = 0.25 + 0.045 * i;
     const bottleneck = i === 7 ? 0.18 : 0;
@@ -203,17 +321,26 @@ function attributionsFor(round: number): LoopScore["attributions"] {
       { feature: "figure quality", weight: -0.11 },
     ],
     [
-      { feature: "ablation completeness", weight: -0.14 },
-      { feature: "theory rigor", weight: -0.12 },
+      { feature: "ablation completeness", weight: -0.18 },
+      { feature: "theory rigor", weight: -0.13 },
+      { feature: "figure quality", weight: -0.05 },
     ],
-    [{ feature: "empirical breadth", weight: -0.06 }],
+    [
+      { feature: "theory rigor", weight: -0.11 },
+      { feature: "empirical breadth", weight: -0.08 },
+    ],
+    [
+      { feature: "empirical breadth", weight: -0.07 },
+      { feature: "theory rigor", weight: -0.05 },
+    ],
+    [{ feature: "empirical breadth", weight: -0.04 }],
     [],
   ];
   const neg = negatives[Math.min(round, negatives.length - 1)];
   const pos = [
     { feature: "novelty of contribution", weight: 0.29 },
-    { feature: "clarity of writing", weight: 0.18 + round * 0.04 },
-    { feature: "reproducibility detail", weight: 0.1 + round * 0.05 },
+    { feature: "clarity of writing", weight: 0.18 + Math.min(round, 4) * 0.03 },
+    { feature: "reproducibility detail", weight: 0.1 + Math.min(round, 4) * 0.04 },
   ];
   return [...pos, ...neg];
 }
@@ -232,7 +359,9 @@ function commentsFor(paperId: string, round: number, version: number): ReviewCom
 const CHANGE_NOTES = [
   "Added the head-only ablation (Table 6), reran the main tables over 3 seeds, regenerated Figure 2 at print resolution, unified notation, and answered both reviewer questions in §A.3.",
   "Completed the suite-C ablation, scoped Prop. 2 to the stationary case, fixed the Figure 6 legend, aligned the contribution list with §5, and committed to releasing training scripts.",
-  "Added confidence intervals to the aggregate metric, reworded the abstract to the scoped claim, and added the cross-suite summary figure (Fig. 10).",
+  "Added confidence intervals for two suites, reworded the abstract to the scoped claim, and added the cross-suite summary figure (Fig. 10).",
+  "Added the remaining suite's confidence interval, discussed the concurrent work in related work, and reordered the intro's contribution list to mirror §5.",
+  "Added the aggregate confidence interval to the cross-suite figure, and fixed the residual notation inconsistency in Appendix B.",
 ];
 
 const changeNoteFor = (version: number) =>
@@ -298,7 +427,12 @@ function makeVersion(
       })),
       layers: layersFor(round),
     },
-    comments: score >= SELECT_THRESHOLD ? [] : commentsFor(paperId, round, version),
+    reviews: reviewsForRound(paperId, round, version),
+    // metaReview is attached afterwards (attachMetaReview) — it needs the
+    // paper's accumulated history, not just this version.
+    // Comments keep flowing even in the selected/best-paper band — SELECTED
+    // is a status, not a stop.
+    comments: commentsFor(paperId, round, version),
   };
 }
 
@@ -314,8 +448,27 @@ function resolveOldComments(paper: LoopPaper, newVersion: number) {
 
 const loopPapers: LoopPaper[] = [];
 
+/** The demo seed is code-defined, so deleting it needs a tombstone to stay
+ *  deleted across reloads (regular papers just leave IndexedDB). */
+const DEMO_HIDDEN_KEY = "sail-demo-hidden";
+function demoHidden(): boolean {
+  try {
+    return localStorage.getItem(DEMO_HIDDEN_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+function hideDemoSeed() {
+  try {
+    localStorage.setItem(DEMO_HIDDEN_KEY, "1");
+  } catch {
+    // in-memory removal already happened; it will reappear next session
+  }
+}
+
 // A finished demo paper so the list view has one worked example.
 (function seedDemo() {
+  if (demoHidden()) return;
   const demoText = `# Retrieval-Augmented Curriculum Distillation for Small Models
 
 ## Abstract
@@ -343,17 +496,17 @@ Confidence-ordered curricula appear to transfer the teacher's *decision to rely 
     abstract:
       "We distill retrieval-augmented teachers into compact students using a curriculum ordered by retrieval confidence, matching teacher quality on 5 of 7 tasks at 12x lower cost.",
     status: "selected",
-    currentVersion: 3,
+    currentVersion: 6,
     versions: [],
     createdAt: "2026-07-09T05:00:00Z",
   };
   let manuscript: LoopManuscript = { kind: "text", text: demoText };
-  p.versions = [1, 2, 3].map((v) => {
+  for (let v = 1; v <= 6; v++) {
     if (v > 1) manuscript = reviseManuscript(manuscript, v);
-    return makeVersion(p.id, v, v === 1 ? "upload" : "ai_revision", manuscript);
-  });
-  resolveOldComments(p, 2);
-  resolveOldComments(p, 3);
+    p.versions.push(makeVersion(p.id, v, v === 1 ? "upload" : "ai_revision", manuscript));
+    if (v > 1) resolveOldComments(p, v);
+    attachMetaReview(p);
+  }
   loopPapers.push(p);
 })();
 
@@ -447,6 +600,7 @@ export const loopApi = {
       createdAt: now(),
     };
     p.status = p.versions[0].score.score >= SELECT_THRESHOLD ? "selected" : "in_review";
+    attachMetaReview(p);
     if (input.file) pdfBlobsByPaper.set(id, { 1: input.file });
     loopPapers.unshift(p);
     persist(p);
@@ -461,16 +615,35 @@ export const loopApi = {
     await delay(1800); // revise + rescore pass
     const p = loopPapers.find((x) => x.id === id);
     if (!p) throw new Error(`paper ${id} not found`);
-    if (p.status === "selected") return structuredClone(p);
     const nextV = p.currentVersion + 1;
     const prevManuscript = p.versions[p.versions.length - 1].manuscript;
     p.versions.push(makeVersion(p.id, nextV, "ai_revision", reviseManuscript(prevManuscript, nextV)));
     resolveOldComments(p, nextV);
     p.currentVersion = nextV;
     p.status = p.versions[nextV - 1].score.score >= SELECT_THRESHOLD ? "selected" : "in_review";
+    attachMetaReview(p);
     const blobs = pdfBlobsByPaper.get(p.id);
     if (blobs?.[nextV - 1]) blobs[nextV] = blobs[nextV - 1]; // same file, new version
     persist(p);
     return structuredClone(p);
+  },
+
+  /** Permanently delete a submission and its whole version history. */
+  async remove(id: string): Promise<void> {
+    if (BASE) {
+      await http(`/api/loop/papers/${id}`, { method: "DELETE" });
+      return;
+    }
+    await ensureHydrated();
+    await delay(150);
+    const idx = loopPapers.findIndex((x) => x.id === id);
+    if (idx === -1) return;
+    const [removed] = loopPapers.splice(idx, 1);
+    for (const v of removed.versions) {
+      if (v.manuscript.kind === "pdf" && v.manuscript.url) URL.revokeObjectURL(v.manuscript.url);
+    }
+    pdfBlobsByPaper.delete(id);
+    if (id === "lp_demo") hideDemoSeed();
+    else await deleteStoredPaper(id);
   },
 };

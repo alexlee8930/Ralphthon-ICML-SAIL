@@ -12,18 +12,22 @@ import {
   PanelLeft,
   RefreshCw,
   Sparkles,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { isMacUA } from "@/lib/platform";
 import { manuscriptHighlightState, useUiStore } from "@/lib/store";
 import {
+  useDeleteLoopPaper,
   useLoopPaper,
   useLoopPapers,
   useReviseLoopPaper,
   useSubmitLoopPaper,
 } from "@/api/reviewLoopQueries";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ManuscriptPane } from "@/components/review/ManuscriptPane";
 import { ReviewTabs } from "@/components/analysis/ReviewTabs";
+import { META_REVIEW_MIN_TURNS } from "@/api/reviewLoop";
 import type { CommentSeverity, LoopPaper, LoopVersion } from "@/api/reviewLoop";
 
 /**
@@ -47,12 +51,19 @@ function SubmitView() {
   const navigate = useNavigate();
   const papers = useLoopPapers();
   const submit = useSubmitLoopPaper();
+  const deletePaper = useDeleteLoopPaper();
+  const [pendingDelete, setPendingDelete] = useState<LoopPaper | null>(null);
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [file, setFile] = useState<File | null>(null);
 
   const hasManuscript = text.trim().length > 0 || !!file;
-  const canSubmit = title.trim().length > 3 && hasManuscript && !submit.isPending;
+  const canSubmit = title.trim().length > 0 && hasManuscript && !submit.isPending;
+  const disabledReason = !title.trim()
+    ? "Add a title first"
+    : !hasManuscript
+      ? "Paste the manuscript text or attach a PDF"
+      : null;
   const onSubmit = () => {
     if (!canSubmit) return;
     submit.mutate(
@@ -126,6 +137,7 @@ function SubmitView() {
               <button
                 onClick={onSubmit}
                 disabled={!canSubmit}
+                title={disabledReason ?? "Score my paper"}
                 className="flex items-center gap-1.5 rounded-input bg-accent px-4 py-2 text-[13px] font-medium text-accent-fg transition-opacity hover:opacity-90 disabled:opacity-40"
               >
                 {submit.isPending ? (
@@ -150,23 +162,54 @@ function SubmitView() {
               </div>
               <div className="mt-2 flex flex-col gap-2">
                 {papers.data!.map((p) => (
-                  <PaperRow key={p.id} paper={p} onOpen={() => navigate(`/review/${p.id}`)} />
+                  <PaperRow
+                    key={p.id}
+                    paper={p}
+                    onOpen={() => navigate(`/review/${p.id}`)}
+                    onDelete={() => setPendingDelete(p)}
+                  />
                 ))}
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {pendingDelete && (
+        <ConfirmDialog
+          title="Delete this submission?"
+          body={`"${pendingDelete.title}" and its full version history will be permanently removed.`}
+          confirmLabel="Delete"
+          onConfirm={() => {
+            deletePaper.mutate(pendingDelete.id);
+            setPendingDelete(null);
+          }}
+          onCancel={() => setPendingDelete(null)}
+        />
+      )}
     </div>
   );
 }
 
-function PaperRow({ paper, onOpen }: { paper: LoopPaper; onOpen: () => void }) {
+function PaperRow({
+  paper,
+  onOpen,
+  onDelete,
+}: {
+  paper: LoopPaper;
+  onOpen: () => void;
+  onDelete: () => void;
+}) {
   const latest = paper.versions[paper.versions.length - 1];
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onOpen}
-      className="flex items-center gap-3 rounded-card border border-border bg-surface px-4 py-3 text-left shadow-card transition-colors hover:border-accent/40"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onOpen();
+      }}
+      className="group flex cursor-pointer items-center gap-3 rounded-card border border-border bg-surface px-4 py-3 text-left shadow-card transition-colors hover:border-accent/40"
     >
       {paper.status === "selected" ? (
         <CheckCircle2 size={16} className="shrink-0 text-ok" />
@@ -183,7 +226,18 @@ function PaperRow({ paper, onOpen }: { paper: LoopPaper; onOpen: () => void }) {
         {latest?.score.score ?? "—"}
         <span className="text-muted">/100</span>
       </div>
-    </button>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete();
+        }}
+        aria-label={`Delete "${paper.title}"`}
+        title="Delete this submission"
+        className="invisible shrink-0 rounded p-1 text-muted hover:text-error group-hover:visible"
+      >
+        <Trash2 size={15} strokeWidth={1.5} />
+      </button>
+    </div>
   );
 }
 
@@ -256,7 +310,7 @@ function LoopView({ paperId }: { paperId: string }) {
             <FileText size={13} />
             <span>Manuscript</span>
           </button>
-          {!selected && isLatest && (
+          {isLatest && (
             <button
               onClick={() => revise.mutate()}
               disabled={revise.isPending}
@@ -285,11 +339,14 @@ function LoopView({ paperId }: { paperId: string }) {
                 <Award size={18} className="shrink-0 text-ok" />
                 <div>
                   <div className="text-sm font-medium text-text">
-                    Selected — the score sits in the award-similar band.
+                    {shown.score.gradeTier === "notable-top-5%"
+                      ? "Best-paper range — the score sits in the top-5% band."
+                      : "Selected — the score sits in the award-similar band."}
                   </div>
                   <div className="text-xs text-muted">
                     v{p.currentVersion} scored {shown.score.score}/100, at or above the selection
-                    threshold of {shown.score.selectThreshold}. The loop is complete.
+                    threshold of {shown.score.selectThreshold}. The committee keeps reviewing —
+                    revise anytime to push further.
                   </div>
                 </div>
               </div>
@@ -313,6 +370,8 @@ function LoopView({ paperId }: { paperId: string }) {
               </div>
             )}
 
+            <ReviewPanel version={shown} />
+
             <Attributions version={shown} />
 
             {shown.comments.length > 0 && (
@@ -334,11 +393,12 @@ function LoopView({ paperId }: { paperId: string }) {
               </div>
             )}
 
-            {!selected && isLatest && (
+            {isLatest && (
               <div className="flex items-center justify-between rounded-card border border-border bg-surface-2 px-4 py-3">
                 <div className="text-xs text-muted">
-                  Ralph applies the open review to the manuscript, uploads it as v
-                  {p.currentVersion + 1}, and rescores — the loop runs until selection.
+                  {selected
+                    ? `Selected doesn't end the loop — Ralph keeps applying the open review, uploads v${p.currentVersion + 1}, and rescores toward the best-paper band.`
+                    : `Ralph applies the open review to the manuscript, uploads it as v${p.currentVersion + 1}, and rescores — the loop runs until selection.`}
                 </div>
                 <button
                   onClick={() => revise.mutate()}
@@ -462,6 +522,56 @@ export function VersionRail({
           </button>
         </div>
       ))}
+    </div>
+  );
+}
+
+/** S1 + S3: the three parallel reviewer takes and the meta-review that
+ *  synthesizes them — the narrative the structured comments are extracted
+ *  from. Backends without these heads simply omit the fields. */
+function ReviewPanel({ version }: { version: LoopVersion }) {
+  const reviews = version.reviews ?? [];
+  if (reviews.length === 0 && !version.metaReview) return null;
+  return (
+    <div className="rounded-card border border-border bg-surface shadow-card">
+      <div className="border-b border-faint px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-muted">
+        Reviews & meta-review · v{version.version}
+      </div>
+      {reviews.length > 0 && (
+        <div className="grid gap-2.5 p-4 sm:grid-cols-3">
+          {reviews.map((r) => (
+            <div key={r.id} className="rounded-input border border-border bg-surface-2/50 p-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-text">{r.reviewer}</span>
+                <span className="font-mono text-xs text-muted">{r.rating}/10</span>
+              </div>
+              <p className="mt-1.5 text-xs leading-relaxed text-muted">{r.summary}</p>
+            </div>
+          ))}
+        </div>
+      )}
+      {version.metaReview ? (
+        <div className={cn("px-4 pb-4", reviews.length === 0 && "pt-4")}>
+          <div className="rounded-input border-l-2 border-accent bg-surface-2/60 px-3.5 py-3">
+            <div className="text-[10px] font-medium uppercase tracking-wide text-muted">
+              Meta-review — AC synthesis of the review & rebuttal history
+            </div>
+            <p className="mt-1.5 text-sm leading-relaxed text-text">{version.metaReview}</p>
+          </div>
+        </div>
+      ) : (
+        version.version < META_REVIEW_MIN_TURNS && (
+          <div className={cn("px-4 pb-4", reviews.length === 0 && "pt-4")}>
+            <div className="rounded-input border border-dashed border-border px-3.5 py-3 text-xs leading-relaxed text-muted">
+              The meta-review synthesizes the accumulated rebuttal history — what each
+              revision contested and actually fixed — so it opens at v{META_REVIEW_MIN_TURNS},
+              after {META_REVIEW_MIN_TURNS} review turns.{" "}
+              {META_REVIEW_MIN_TURNS - version.version} more turn
+              {META_REVIEW_MIN_TURNS - version.version === 1 ? "" : "s"} to go.
+            </div>
+          </div>
+        )
+      )}
     </div>
   );
 }

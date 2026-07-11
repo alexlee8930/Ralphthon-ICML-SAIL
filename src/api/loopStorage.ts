@@ -54,6 +54,20 @@ export async function loadStoredPapers(): Promise<StoredPaper[]> {
   }
 }
 
+export async function deleteStoredPaper(id: string): Promise<void> {
+  try {
+    const db = await openDb();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(STORE, "readwrite");
+      tx.objectStore(STORE).delete(id);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch {
+    // best-effort: in-memory removal already happened
+  }
+}
+
 export async function persistPaper(paper: LoopPaper, pdfBlobs: Record<number, Blob>): Promise<void> {
   try {
     const db = await openDb();

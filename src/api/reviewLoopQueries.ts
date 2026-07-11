@@ -30,6 +30,17 @@ export function useSubmitLoopPaper() {
   });
 }
 
+export function useDeleteLoopPaper() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => loopApi.remove(id),
+    onSuccess: (_data, id) => {
+      qc.removeQueries({ queryKey: loopKeys.one(id) });
+      void qc.invalidateQueries({ queryKey: loopKeys.all });
+    },
+  });
+}
+
 export function useReviseLoopPaper(id: string) {
   const qc = useQueryClient();
   return useMutation({

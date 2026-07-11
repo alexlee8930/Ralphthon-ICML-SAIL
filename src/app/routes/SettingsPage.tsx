@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { useUiStore } from "@/lib/store";
 import { RemoteComputeCard } from "@/components/settings/RemoteComputeCard";
@@ -54,11 +54,33 @@ export function SettingsPage() {
   const { theme, setTheme } = useUiStore();
 
   const [apiUrl, setApiUrl] = useState(
-    (import.meta.env.VITE_RALPH_API_URL as string | undefined) ?? "http://127.0.0.1:8000",
+    (import.meta.env.VITE_RALPH_API_URL as string | undefined) ?? "http://127.0.0.1:8100",
   );
-  const [connected, setConnected] = useState(true);
+  const [connected, setConnected] = useState(false);
+  const [checking, setChecking] = useState(false);
   const [model, setModel] = useState("ralph/reviewer-v2");
-  const status = connected ? "ready" : "offline";
+  const status = checking ? "checking" : connected ? "ready" : "offline";
+
+  // A connection is a real reachability check against the adapter, not a UI
+  // toggle — the same /healthz the deployment exposes.
+  const checkConnection = async (url: string) => {
+    setChecking(true);
+    try {
+      const res = await fetch(`${url.replace(/\/+$/, "")}/healthz`, {
+        signal: AbortSignal.timeout(5000),
+      });
+      setConnected(res.ok);
+    } catch {
+      setConnected(false);
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  useEffect(() => {
+    if (import.meta.env.VITE_RALPH_API_URL) void checkConnection(apiUrl);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- probe once on mount
+  }, []);
 
   return (
     <div className="h-full overflow-y-auto">
@@ -72,7 +94,7 @@ export function SettingsPage() {
             <input
               value={apiUrl}
               onChange={(e) => setApiUrl(e.target.value)}
-              placeholder="http://127.0.0.1:8000"
+              placeholder="http://127.0.0.1:8100"
               className={inputCls("flex-1 font-mono")}
             />
             {connected ? (
@@ -80,8 +102,12 @@ export function SettingsPage() {
                 Disconnect
               </button>
             ) : (
-              <button onClick={() => setConnected(true)} className={btnAccent()}>
-                Connect
+              <button
+                onClick={() => void checkConnection(apiUrl)}
+                disabled={checking}
+                className={btnAccent()}
+              >
+                {checking ? "Connecting…" : "Connect"}
               </button>
             )}
           </div>

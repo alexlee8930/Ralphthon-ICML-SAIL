@@ -158,7 +158,7 @@ export function ManuscriptPane({ version }: { version: LoopVersion }) {
         <span className="shrink-0 rounded-full border border-border bg-surface-2 px-2 py-0.5 font-mono text-[10px] text-muted">
           v{version.version}
         </span>
-        {m.kind === "pdf" && m.fileName && (
+        {m.fileName && (
           <span className="min-w-0 truncate text-xs text-muted">{m.fileName}</span>
         )}
         <div className="flex-1" />

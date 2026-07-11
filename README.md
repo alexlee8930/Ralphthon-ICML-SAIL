@@ -39,12 +39,21 @@ echo 'VITE_RALPH_API_URL=http://localhost:8100' > .env.local   # 8000은 로컬 
 
 ### 실 어댑터 연결 메모 (2026-07-11, 백엔드 어댑터 v1 기준)
 
+- GCP 배포본: `http://8.230.3.211:8100` (GCE `sail-adapter` VM, `sweetspot-ax` /
+  asia-northeast3-a, systemd `sail-adapter.service`, 상태 `/opt/sail/sail_state.json`).
+  `VITE_RALPH_API_URL=http://8.230.3.211:8100` 로 바로 연결 가능.
 - 어댑터: `icml-ac/serve/sail_adapter.py` (로컬 :8100) — 5개 엔드포인트 계약 전부 구현,
-  CORS 허용, `sail_state.json` 영속. 파이프라인: Claude 리뷰 3개 병렬 → v2 LoRA 메타리뷰
-  (VESSL) → 이슈 코멘트 구조화 → p_accept×100 점수.
-- 제출/수정 지연 ~30-60초 (scoring 상태로 커버).
-- **PDF 제출은 서버에서 텍스트 추출되어 `manuscript.kind: "text"`로 반환** — PDF embed가
-  필요해지면 PDF 서빙 엔드포인트(GET .../versions/:v/pdf 등) 계약을 정해서 알려주세요.
+  CORS 허용, `sail_state.json` 영속. **실 파이프라인 연결 완료**: Claude 리뷰어 3인 병렬
+  (few-shot 스킬, 미서빙 헤드 대체) → VESSL v2 LoRA 메타리뷰+p_accept
+  (`/meta-review`, 반론 히스토리는 `discussion`으로 전달) → 점수 = p_accept×100에
+  양극단 완화 캘리브레이션(p^0.25) → Claude attribution 헤드(원문 verbatim 근거) →
+  Claude revise 에이전트(원고 실제 재작성). 헤드별 독립 폴백(결정적 시뮬레이션).
+- SELECT 규칙: 점수 ≥ 88 **그리고** 리뷰 턴 ≥ 5 (메타리뷰 없이 선정하지 않음).
+  SELECTED 이후에도 리뷰·수정 루프는 계속 (베스트페이퍼 밴드까지 피드백 지속).
+- 제출 지연 ~20-40초, AI 수정 ~2-3분 (scoring 상태로 커버).
+- **PDF 제출은 서버에서 텍스트 추출되어 `manuscript.kind: "text"`로 반환** (계약 상세는
+  `src/api/reviewLoop.ts` 모듈 헤더가 단일 기준) — PDF embed가 필요해지면 PDF 서빙
+  엔드포인트(GET .../versions/:v/pdf 등) 계약을 정해서 알려주세요.
 - `score.attributions`는 v1에선 근사(코멘트 키워드→원고 문장 매칭), `layers`는 점수 연동
   근사값. 점수 캘리브레이션(양극단 완화)은 백엔드 후속 작업.
 
@@ -89,15 +98,18 @@ src/
    모델 입력은 본문 텍스트이므로 PDF는 백엔드에서 텍스트 추출.
 2. **채점** — 3-헤드 모델의 선택도 점수 **0–100** (100 = 만점). 점수 바에
    select 임계선(≥ 88, 수상작-유사 밴드) 표시.
-3. **SELECT 판정** — 임계값 도달 시 SELECTED 배너와 함께 루프 종료.
+3. **SELECT 판정** — 임계값 도달 시 SELECTED 배너 표시. 단 **루프는 종료되지
+   않음**: 선정/베스트페이퍼 밴드에서도 리뷰·코멘트가 계속 생성되고 AI 수정을
+   계속 돌릴 수 있음 (SELECTED는 상태이지 종착점이 아님).
 4. **AC 리뷰** — 미달 시 버전당 6–7건의 이슈형 코멘트(major/minor/question,
    섹션 라벨). 다음 버전이 해소하면 `resolved in v(n+1)` 취소선 처리.
 5. **AI 수정 루프** — "Revise with AI" 클릭 → 에이전트가 열린 리뷰를 반영해
    v(n+1) 생성 → 자동 재채점 → 반복. 버전 레일(v1 64 → v2 78 → v3 91✓)로
    전체 여정 탐색.
 6. **원고 패널** — 각 버전이 채점 당시의 원고 스냅샷 보유. 텍스트는 세리프
-   조판(마크다운 헤딩 지원), PDF는 인라인 embed + "Open in new tab".
-   360–960px 드래그 리사이즈.
+   조판(마크다운 헤딩 지원). PDF 인라인 embed + "Open in new tab"은 PDF URL이
+   있을 때(mock 또는 향후 PDF 서빙 엔드포인트) — 실 어댑터 v1은 추출 텍스트로
+   표시. 360–960px 드래그 리사이즈.
 7. **근거 하이라이트** — 기여도(feature attribution) 행 호버 → 그 피처를
    유발한 원고 문장이 패널에서 하이라이트 + 자동 스크롤 (S6 설명가능성의 UI).
 8. **Analysis 탭** — ① 점수 병목 시각화: 백본 12블록 활성 → 8번 블록의
@@ -143,7 +155,12 @@ src/
         ],
         "layers": [0.28, …]          // 백본 12블록 활성 (병목 시각화용)
       },
-      "comments": [                  // ★ 이 버전에 달린 AC 리뷰 (select면 [])
+      "reviews": [                   // S1 리뷰 헤드: 병렬 리뷰어 3인의 리뷰
+        { "id": "lp_1_v1_r0", "reviewer": "Reviewer 1",
+          "rating": 5, "summary": "…" }
+      ],
+      "metaReview": "…",             // S3 메타리뷰 헤드: 리뷰·반론 히스토리 종합 (v5부터)
+      "comments": [                  // ★ 메타리뷰에서 추출한 구조화 코멘트 (select면 [])
         { "id": "lp_1_v1_c0", "version": 1,
           "severity": "major",       // major | minor | question
           "section": "Method",
@@ -192,7 +209,10 @@ Analysis 히스토그램은 목이 아니라 **실데이터**: 학습 코퍼스 
 
 ## 모의(mock) 동작 규칙
 
-백엔드 없이도 전체 플로우가 돌도록: 점수 궤적 v1 64 → v2 78 → v3 91(select),
-리뷰 코멘트는 라운드별 템플릿(회차가 갈수록 좁아짐), AI 수정은 원고에
-"Revision notes (vN)" 섹션을 덧붙여 버전 간 차이가 보이게 함. 근거 문장은
-제출한 원고에서 피처별 키워드로 실추출.
+백엔드 없이도 전체 플로우가 돌도록: 점수 궤적 v1 63 → 69 → 74 → 79 → 84 →
+v6 91(select). 리뷰(리뷰어 3인)와 점수는 매 버전 생성되지만, **메타리뷰는 반론
+히스토리가 필요하므로 리뷰 턴 5회 축적 후(v5부터)** 실제 루프 기록(제기/해소된
+이슈 수, AI 수정 내역, 점수 궤적)을 종합해 생성. 리뷰 코멘트는 라운드별
+템플릿(회차가 갈수록 좁아짐), AI 수정은 원고에 "Revision notes (vN)" 섹션을
+덧붙여 버전 간 차이가 보이게 함. 근거 문장은 제출한 원고에서 피처별 키워드로
+실추출.

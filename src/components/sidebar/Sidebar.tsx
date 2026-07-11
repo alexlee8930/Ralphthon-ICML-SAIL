@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Award, PanelLeft, Plus, Settings } from "lucide-react";
+import { Award, PanelLeft, Plus, Settings, Trash2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { isMacUA } from "@/lib/platform";
 import { SIDEBAR_MAX, SIDEBAR_MIN, useOverlayTitlebar, useUiStore } from "@/lib/store";
-import { useLoopPapers } from "@/api/reviewLoopQueries";
+import { useDeleteLoopPaper, useLoopPapers } from "@/api/reviewLoopQueries";
 import type { LoopPaper } from "@/api/reviewLoop";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { StatusPills } from "./StatusPills";
 
 
@@ -27,6 +28,8 @@ export function Sidebar() {
   const { sidebarCollapsed, sidebarWidth, setSidebarCollapsed, setSidebarWidth, toggleSidebar } =
     useUiStore();
   const { data: papers } = useLoopPapers();
+  const deletePaper = useDeleteLoopPaper();
+  const [pendingDelete, setPendingDelete] = useState<LoopPaper | null>(null);
   // While dragging, the live width lives here; the store (and localStorage)
   // are only written on pointer-up.
   const [dragWidth, setDragWidth] = useState<number | null>(null);
@@ -130,7 +133,7 @@ export function Sidebar() {
               key={paper.id}
               to={to}
               className={cn(
-                "flex items-center gap-2 rounded-input py-1 pl-2 pr-2 text-[13px] hover:bg-surface-2",
+                "group flex items-center gap-2 rounded-input py-1 pl-2 pr-2 text-[13px] hover:bg-surface-2",
                 location.pathname === to ? "bg-surface-2 text-text" : "text-text/90",
               )}
             >
@@ -141,9 +144,21 @@ export function Sidebar() {
                 )}
               />
               <span className="flex-1 truncate">{paper.title}</span>
-              <span className="ml-auto shrink-0 font-mono text-[11px] text-muted">
+              <span className="ml-auto shrink-0 font-mono text-[11px] text-muted group-hover:hidden">
                 {latestScore(paper)}
               </span>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setPendingDelete(paper);
+                }}
+                aria-label={`Delete "${paper.title}"`}
+                title="Delete this review"
+                className="ml-auto hidden shrink-0 rounded p-0.5 text-muted hover:text-error group-hover:block"
+              >
+                <Trash2 size={13} strokeWidth={1.5} />
+              </button>
             </NavLink>
           );
         })}
@@ -161,6 +176,24 @@ export function Sidebar() {
         </button>
       </div>
       </aside>
+
+      {pendingDelete && (
+        <ConfirmDialog
+          title="Delete this review?"
+          body={`"${pendingDelete.title}" and its full version history will be permanently removed.`}
+          confirmLabel="Delete"
+          onConfirm={() => {
+            const id = pendingDelete.id;
+            setPendingDelete(null);
+            deletePaper.mutate(id, {
+              onSuccess: () => {
+                if (location.pathname.startsWith(`/review/${id}`)) navigate("/review");
+              },
+            });
+          }}
+          onCancel={() => setPendingDelete(null)}
+        />
+      )}
 
       {/* Drag divider: resize within [SIDEBAR_MIN, SIDEBAR_MAX]; dragging far
           left snaps the sidebar closed. Kept mounted while collapsed so an
