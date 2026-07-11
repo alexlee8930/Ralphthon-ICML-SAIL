@@ -488,6 +488,7 @@ function LoopView({ paperId }: { paperId: string }) {
               <>
                 <ScoreHero cycle={shown} />
                 <Attributions cycle={shown} />
+                {shown.deficiency && <DeficiencyCard cycle={shown} />}
                 {isCurrent && (
                   <div className="flex items-center justify-between rounded-card border border-border bg-surface-2 px-4 py-3">
                     <div className="text-xs text-muted">
@@ -1086,6 +1087,35 @@ function ScoreHero({ cycle }: { cycle: LoopCycle }) {
           select ≥ {s.selectThreshold}
         </span>
         <span className="absolute right-0">100</span>
+      </div>
+    </div>
+  );
+}
+
+/** S6 synthesis: why the score stopped where it did this cycle — including
+ *  the selected-but-not-best-paper gap — with actions for the next cycle. */
+function DeficiencyCard({ cycle }: { cycle: LoopCycle }) {
+  const d = cycle.deficiency!;
+  return (
+    <div className="rounded-card border border-border bg-surface shadow-card">
+      <div className="flex items-center justify-between border-b border-faint px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-muted">
+        <span>Why not higher — path to {d.targetBand}</span>
+      </div>
+      <div className="px-4 py-3">
+        <p className="text-sm font-medium leading-relaxed text-text">{d.headline}</p>
+      </div>
+      <div className="divide-y divide-faint border-t border-faint">
+        {d.items.map((it, i) => (
+          <div key={i} className="px-4 py-2.5">
+            <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted ring-1 ring-border">
+              {it.feature}
+            </span>
+            <p className="mt-1.5 text-xs leading-relaxed text-muted">{it.why}</p>
+            <p className="mt-1 text-xs leading-relaxed text-text">
+              <span className="font-medium text-accent">Next cycle:</span> {it.action}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -102,6 +102,13 @@ export interface LoopCycle {
   /** Set at finalize — score exists only alongside the meta-review. */
   score?: LoopScore;
   decision?: CycleDecision;
+  /** S6 synthesis: what capped the score this cycle (incl. the
+   *  selected-but-not-best-paper gap) and what to change next cycle. */
+  deficiency?: {
+    headline: string;
+    targetBand: string;
+    items: Array<{ feature: string; why: string; action: string }>;
+  };
 }
 
 export interface LoopPaper {
@@ -266,6 +273,35 @@ function mockFinalize(cyc: LoopCycle) {
     layers: layersFor(score),
   };
   cyc.decision = score >= SELECT_THRESHOLD ? "accept" : "reject";
+  const bands: Array<[number, string]> = [
+    [60, "poster"],
+    [78, "spotlight"],
+    [88, "oral / selection"],
+    [95, "notable-top-5% (best-paper band)"],
+  ];
+  const nb = bands.find(([cut]) => score < cut);
+  const targetBand = nb ? `${nb[0]} (${nb[1]})` : "top of the corpus";
+  const negatives = cyc.score.attributions.filter((a) => a.weight < 0).sort((a, b) => a.weight - b.weight);
+  const items = negatives.slice(0, 4).map((a) => ({
+    feature: a.feature,
+    why: `This feature pulled the score down (${a.weight >= 0 ? "+" : ""}${a.weight.toFixed(2)}) this cycle.`,
+    action: `Address ${a.feature} directly in the next revision and surface the change in the abstract.`,
+  }));
+  cyc.deficiency = {
+    headline: items.length
+      ? `The score stopped at ${score} mainly on ${items[0].feature} — the next band is ${targetBand}.`
+      : `The score reached ${score}; the next band is ${targetBand}.`,
+    targetBand,
+    items: items.length
+      ? items
+      : [
+          {
+            feature: "empirical breadth",
+            why: "No single feature dominates, but the aggregate evidence stops short of the next band.",
+            action: "Broaden the evaluation and tighten claims to push into the next band.",
+          },
+        ],
+  };
   pushMsg(cyc, "ac", "Area Chair", meta);
 }
 
