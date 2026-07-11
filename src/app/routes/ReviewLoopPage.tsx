@@ -350,7 +350,9 @@ function LoopView({ paperId }: { paperId: string }) {
                   ) : (
                     <Sparkles size={13} />
                   )}
-                  <span>{revise.isPending ? "Working…" : `Revise into v${p.currentVersion + 1}`}</span>
+                  <span>
+                    {revise.isPending ? "Working…" : `Revise with AI → v${p.currentVersion + 1}`}
+                  </span>
                 </button>
               </div>
             )}
