@@ -765,31 +765,32 @@ function CommentsBlock({
       </div>
       <div className="mt-2 flex flex-col gap-2">
         {cycle.comments.map((c) => (
-          <div key={c.id} className="group rounded-card border border-border bg-surface px-4 py-2.5 shadow-card">
-            <div className="flex items-center gap-2">
-              <span
-                className={cn(
-                  "rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ring-1",
-                  SEVERITY_STYLE[c.severity],
-                )}
-              >
-                {c.severity}
-              </span>
-              <span className="text-xs text-muted">
-                {c.reviewer} · {c.section}
-              </span>
-              <div className="flex-1" />
-              {canReply && (
-                <button
-                  onClick={() => onReply(c)}
-                  className="invisible flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-muted hover:bg-surface-2 hover:text-text group-hover:visible"
+          <div key={c.id} className="flex justify-start">
+            <div className="group max-w-[85%] rounded-card border border-border bg-surface px-4 py-2.5 shadow-card">
+              <div className="flex items-center gap-2">
+                <span
+                  className={cn(
+                    "rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ring-1",
+                    SEVERITY_STYLE[c.severity],
+                  )}
                 >
-                  <CornerDownRight size={11} />
-                  Reply
-                </button>
-              )}
+                  {c.severity}
+                </span>
+                <span className="text-xs text-muted">
+                  {c.reviewer} · {c.section}
+                </span>
+                {canReply && (
+                  <button
+                    onClick={() => onReply(c)}
+                    className="invisible flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-muted hover:bg-surface-2 hover:text-text group-hover:visible"
+                  >
+                    <CornerDownRight size={11} />
+                    Reply
+                  </button>
+                )}
+              </div>
+              <p className="mt-1.5 text-sm leading-relaxed text-text">{c.body}</p>
             </div>
-            <p className="mt-1.5 text-sm leading-relaxed text-text">{c.body}</p>
           </div>
         ))}
       </div>
