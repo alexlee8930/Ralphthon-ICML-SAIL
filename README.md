@@ -1,6 +1,6 @@
-# Ralph Science Web
+# ICML SAIL with Ralph
 
-Frontend for the **Ralph paper-review agent** (ICML AC-style reviewer).
+Frontend for **ICML SAIL with Ralph** — the AC-style paper-review agent.
 The UI is a pixel-faithful web port of the MIT-licensed
 [Open Science Desktop](https://github.com/ai4s-research/open-science)
 (the open-source Claude Science alternative) — see `LICENSES/open-science-MIT.txt`.
