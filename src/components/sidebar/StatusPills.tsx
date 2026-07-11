@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { cn } from "@/lib/cn";
+import { loopApi } from "@/api/reviewLoop";
 
 /**
  * Runtime status pills. The desktop app read a live OpenCode runtime; on the
@@ -8,19 +8,7 @@ import { cn } from "@/lib/cn";
  * whether the mock or a real backend is answering.
  */
 export function StatusPills() {
-  const [usingMock, setUsingMock] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    let alive = true;
-    void import("@/api/client").then((m) => {
-      if (alive) setUsingMock(m.api.usingMock);
-    });
-    return () => {
-      alive = false;
-    };
-  }, []);
-
-  const modelValue = usingMock === false ? "api" : "mock";
+  const modelValue = loopApi.usingMock ? "mock" : "api";
 
   return (
     <div className="flex flex-col gap-1 text-xs text-muted">

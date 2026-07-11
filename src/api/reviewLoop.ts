@@ -6,12 +6,17 @@
  * AI revision via the agent, or manual upload) which bumps the version, the
  * new version is rescored, and the loop repeats until selection.
  *
+ * A submission carries the manuscript itself — pasted full text, an uploaded
+ * PDF, or both — and every version keeps its own manuscript snapshot so the
+ * version rail can page through what the model actually read.
+ *
  * When VITE_RALPH_API_URL is set every call maps 1:1 onto the backend:
  *   POST /api/loop/papers                      → submit (v1)
  *   GET  /api/loop/papers                      → list
  *   GET  /api/loop/papers/:id                  → full loop state
  *   POST /api/loop/papers/:id/revise           → AI revision (new version + rescore + review)
  *   POST /api/loop/papers/:id/versions         → manual revision upload (multipart)
+ * The backend returns a manuscript {kind, text|url, fileName} per version.
  * Until then the mock below simulates the loop deterministically.
  */
 
@@ -42,12 +47,28 @@ export interface ReviewComment {
   resolvedInVersion?: number;
 }
 
+/** The manuscript a version was scored on. Text submissions carry the full
+ *  text (AI revisions append a "Revision notes" section per round); PDF
+ *  submissions carry an object/remote URL for rendering plus the accumulated
+ *  revision notes in `text`. */
+export interface LoopManuscript {
+  kind: "text" | "pdf";
+  /** kind 'text': the full manuscript text. kind 'pdf': accumulated revision notes. */
+  text?: string;
+  /** kind 'pdf' only. */
+  fileName?: string;
+  /** kind 'pdf' only — object URL (mock) or backend file URL. */
+  url?: string;
+}
+
 export interface LoopVersion {
   version: number;
   createdAt: string;
   origin: "upload" | "ai_revision";
   /** What the revision changed — the agent's summary of its edits. */
   changeNote?: string;
+  /** The manuscript this version was scored on. */
+  manuscript: LoopManuscript;
   score: LoopScore;
   comments: ReviewComment[];
 }
@@ -62,11 +83,14 @@ export interface LoopPaper {
   createdAt: string;
 }
 
+/** Submission = title + manuscript, where the manuscript is pasted full text
+ *  (abstract folded into `text`), an attached PDF, or both. */
 export interface SubmitLoopPaperInput {
   title: string;
-  abstract?: string;
-  file?: File;
+  /** Full manuscript text (the abstract is part of it). */
   text?: string;
+  /** Uploaded manuscript PDF. */
+  file?: File;
 }
 
 // ---------------------------------------------------------------------------
@@ -163,14 +187,58 @@ const CHANGE_NOTES = [
   "Added confidence intervals to the aggregate metric, reworded the abstract to the scoped claim, and added the cross-suite summary figure (Fig. 10).",
 ];
 
-function makeVersion(paperId: string, version: number, origin: LoopVersion["origin"]): LoopVersion {
+const changeNoteFor = (version: number) =>
+  CHANGE_NOTES[Math.min(version - 2, CHANGE_NOTES.length - 1)];
+
+/** The appended "Revision notes" section for a revised manuscript — the
+ *  change-note copy broken into one concrete edit per line. */
+function revisionNotesSection(version: number, note: string): string {
+  const edits = note
+    .replace(/\.\s*$/, "")
+    .split(/,\s+(?:and\s+)?/)
+    .map((e) => `- ${e.charAt(0).toUpperCase()}${e.slice(1)}`);
+  return `## Revision notes (v${version})\n\n${edits.join("\n")}`;
+}
+
+/** What the AI revision does to the manuscript: text manuscripts grow a
+ *  revision-notes section (so switching versions visibly changes the text);
+ *  PDF manuscripts keep the same file/url but accumulate the notes in `text`. */
+function reviseManuscript(prev: LoopManuscript, version: number): LoopManuscript {
+  const section = revisionNotesSection(version, changeNoteFor(version));
+  const text = prev.text ? `${prev.text}\n\n---\n\n${section}` : section;
+  return prev.kind === "pdf"
+    ? { kind: "pdf", url: prev.url, fileName: prev.fileName, text }
+    : { kind: "text", text };
+}
+
+function manuscriptForSubmission(input: SubmitLoopPaperInput): LoopManuscript {
+  // A PDF is the authoritative manuscript when attached; pasted text (if any)
+  // rides along as notes text. Text-only submissions render the text itself.
+  if (input.file) {
+    return {
+      kind: "pdf",
+      url: URL.createObjectURL(input.file),
+      fileName: input.file.name,
+      text: input.text?.trim() || undefined,
+    };
+  }
+  return { kind: "text", text: input.text ?? "" };
+}
+
+function makeVersion(
+  paperId: string,
+  version: number,
+  origin: LoopVersion["origin"],
+  manuscript: LoopManuscript,
+): LoopVersion {
   const round = version - 1;
   const score = scoreForRound(round);
   return {
     version,
     createdAt: now(),
     origin,
-    changeNote: origin === "ai_revision" ? CHANGE_NOTES[Math.min(round - 1, CHANGE_NOTES.length - 1)] : undefined,
+    changeNote: origin === "ai_revision" ? changeNoteFor(version) : undefined,
+    manuscript,
     score: {
       version,
       score,
@@ -196,6 +264,27 @@ const loopPapers: LoopPaper[] = [];
 
 // A finished demo paper so the list view has one worked example.
 (function seedDemo() {
+  const demoText = `# Retrieval-Augmented Curriculum Distillation for Small Models
+
+## Abstract
+
+We distill retrieval-augmented teachers into compact students using a curriculum ordered by retrieval confidence, matching teacher quality on 5 of 7 tasks at 12x lower cost.
+
+## 1. Introduction
+
+Large retrieval-augmented models set the quality bar on knowledge-intensive tasks, but their inference cost keeps them out of most production stacks. We ask whether the ordering of distillation examples — not just their volume — determines how much of the teacher's retrieval-grounded ability a compact student inherits.
+
+## 2. Method
+
+We order the distillation set by the teacher's retrieval confidence and anneal from high-confidence (parametric-friendly) examples toward low-confidence (retrieval-dependent) ones. A lightweight consistency head penalizes students that drift from the teacher's cited evidence.
+
+## 3. Experiments
+
+Across seven knowledge-intensive benchmarks, the curriculum-distilled 1.3B student matches the 13B retrieval-augmented teacher on five tasks while running at 12x lower serving cost. Ablations attribute most of the gain to the confidence ordering rather than the consistency head.
+
+## 4. Discussion
+
+Confidence-ordered curricula appear to transfer the teacher's *decision to rely on retrieval*, not just its answers — students learn when to defer to evidence.`;
   const p: LoopPaper = {
     id: "lp_demo",
     title: "Retrieval-Augmented Curriculum Distillation for Small Models",
@@ -206,7 +295,11 @@ const loopPapers: LoopPaper[] = [];
     versions: [],
     createdAt: "2026-07-09T05:00:00Z",
   };
-  p.versions = [1, 2, 3].map((v) => makeVersion(p.id, v, v === 1 ? "upload" : "ai_revision"));
+  let manuscript: LoopManuscript = { kind: "text", text: demoText };
+  p.versions = [1, 2, 3].map((v) => {
+    if (v > 1) manuscript = reviseManuscript(manuscript, v);
+    return makeVersion(p.id, v, v === 1 ? "upload" : "ai_revision", manuscript);
+  });
   resolveOldComments(p, 2);
   resolveOldComments(p, 3);
   loopPapers.push(p);
@@ -235,12 +328,15 @@ export const loopApi = {
     return structuredClone(p);
   },
 
-  /** Submit → the model scores v1 (and reviews it when it falls short). */
+  /** Submit → the model scores v1 (and reviews it when it falls short).
+   *  Requires a title AND a manuscript (pasted text or attached PDF). */
   async submit(input: SubmitLoopPaperInput): Promise<LoopPaper> {
+    if (!input.title.trim() || (!input.text?.trim() && !input.file)) {
+      throw new Error("A title and a manuscript (text or PDF) are required.");
+    }
     if (BASE) {
       const form = new FormData();
       form.set("title", input.title);
-      if (input.abstract) form.set("abstract", input.abstract);
       if (input.file) form.set("file", input.file);
       if (input.text) form.set("text", input.text);
       return http("/api/loop/papers", { method: "POST", body: form });
@@ -250,10 +346,10 @@ export const loopApi = {
     const p: LoopPaper = {
       id,
       title: input.title,
-      abstract: input.abstract ?? "",
+      abstract: (input.text ?? "").trim().slice(0, 280),
       status: "in_review",
       currentVersion: 1,
-      versions: [makeVersion(id, 1, "upload")],
+      versions: [makeVersion(id, 1, "upload", manuscriptForSubmission(input))],
       createdAt: now(),
     };
     p.status = p.versions[0].score.score >= SELECT_THRESHOLD ? "selected" : "in_review";
@@ -270,7 +366,8 @@ export const loopApi = {
     if (!p) throw new Error(`paper ${id} not found`);
     if (p.status === "selected") return structuredClone(p);
     const nextV = p.currentVersion + 1;
-    p.versions.push(makeVersion(p.id, nextV, "ai_revision"));
+    const prevManuscript = p.versions[p.versions.length - 1].manuscript;
+    p.versions.push(makeVersion(p.id, nextV, "ai_revision", reviseManuscript(prevManuscript, nextV)));
     resolveOldComments(p, nextV);
     p.currentVersion = nextV;
     p.status = p.versions[nextV - 1].score.score >= SELECT_THRESHOLD ? "selected" : "in_review";

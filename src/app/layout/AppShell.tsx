@@ -3,9 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { PanelLeft } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Sidebar } from "@/components/sidebar/Sidebar";
-import { CommandPalette } from "@/components/command-palette/CommandPalette";
 import { Toaster } from "@/components/ui/Toaster";
-import { mockProject } from "@/lib/mock";
 import { isMacUA, openExternal } from "@/lib/platform";
 import { useOverlayTitlebar, useToggleSidebar, useUiStore } from "@/lib/store";
 
@@ -40,16 +38,16 @@ export function AppShell() {
     return () => document.removeEventListener("click", onClick);
   }, []);
 
-  // The live session page's own header doubles as the titlebar when the
-  // sidebar is collapsed; every other route gets this fallback strip so the
-  // window stays usable and the sidebar can be re-expanded.
+  // The review page's own header doubles as the titlebar when the sidebar is
+  // collapsed; every other route gets this fallback strip so the window stays
+  // usable and the sidebar can be re-expanded.
   const isMac = isMacUA();
   const overlayTitlebar = useOverlayTitlebar();
-  const pageOwnsTitlebar = useLocation().pathname.startsWith("/live");
+  const pageOwnsTitlebar = useLocation().pathname.startsWith("/review");
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-bg text-text">
-      <Sidebar project={mockProject} />
+      <Sidebar />
       <main className="flex min-w-0 flex-1 flex-col">
         {sidebarCollapsed && !pageOwnsTitlebar && (
           <div
@@ -72,7 +70,6 @@ export function AppShell() {
           <Outlet />
         </div>
       </main>
-      <CommandPalette />
       <Toaster />
     </div>
   );

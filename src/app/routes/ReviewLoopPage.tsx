@@ -5,6 +5,7 @@ import {
   Award,
   CheckCircle2,
   CircleDot,
+  FileText,
   FileUp,
   Loader2,
   PanelLeft,
@@ -20,13 +21,16 @@ import {
   useReviseLoopPaper,
   useSubmitLoopPaper,
 } from "@/api/reviewLoopQueries";
+import { ManuscriptPane } from "@/components/review/ManuscriptPane";
 import type { CommentSeverity, LoopPaper, LoopVersion } from "@/api/reviewLoop";
 
 /**
- * The review loop: submit a paper → the 3-head model scores it out of 100 →
- * award-similar scores are SELECTED; anything lower gets an AC-style review,
- * a one-click AI revision bumps the version, and the loop repeats until
- * selection. `/review` submits; `/review/:paperId` runs the loop.
+ * The review loop: submit a paper (title + manuscript text and/or PDF) → the
+ * 3-head model scores it out of 100 → award-similar scores are SELECTED;
+ * anything lower gets an AC-style review, a one-click AI revision bumps the
+ * version, and the loop repeats until selection. `/review` submits;
+ * `/review/:paperId` runs the loop with the manuscript of the shown version
+ * in a resizable right pane (the reference inspector pattern).
  */
 export function ReviewLoopPage() {
   const { paperId } = useParams();
@@ -42,14 +46,15 @@ function SubmitView() {
   const papers = useLoopPapers();
   const submit = useSubmitLoopPaper();
   const [title, setTitle] = useState("");
-  const [abstract, setAbstract] = useState("");
+  const [text, setText] = useState("");
   const [file, setFile] = useState<File | null>(null);
 
-  const canSubmit = title.trim().length > 3 && !submit.isPending;
+  const hasManuscript = text.trim().length > 0 || !!file;
+  const canSubmit = title.trim().length > 3 && hasManuscript && !submit.isPending;
   const onSubmit = () => {
     if (!canSubmit) return;
     submit.mutate(
-      { title: title.trim(), abstract: abstract.trim() || undefined, file: file ?? undefined },
+      { title: title.trim(), text: text.trim() || undefined, file: file ?? undefined },
       { onSuccess: (p) => navigate(`/review/${p.id}`) },
     );
   };
@@ -96,13 +101,13 @@ function SubmitView() {
               className="mt-1.5 w-full rounded-input border border-border bg-surface px-3 py-2 text-sm text-text outline-none placeholder:text-muted focus:border-accent"
             />
             <label className="mt-4 block text-xs font-medium uppercase tracking-wider text-muted">
-              Abstract
+              Manuscript
             </label>
             <textarea
-              value={abstract}
-              onChange={(e) => setAbstract(e.target.value)}
-              placeholder="Paste the abstract (optional — the full text drives the score)"
-              rows={4}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Paste the full paper text — abstract, sections, everything. The whole manuscript drives the score. (Or attach the PDF below.)"
+              rows={12}
               className="mt-1.5 w-full resize-none rounded-input border border-border bg-surface px-3 py-2 text-sm text-text outline-none placeholder:text-muted focus:border-accent"
             />
             <div className="mt-4 flex items-center justify-between">
@@ -189,7 +194,7 @@ function LoopView({ paperId }: { paperId: string }) {
   const revise = useReviseLoopPaper(paperId);
   const [viewVersion, setViewVersion] = useState<number | null>(null);
 
-  const { sidebarCollapsed, setSidebarCollapsed } = useUiStore();
+  const { sidebarCollapsed, setSidebarCollapsed, inspectorOpen, setInspectorOpen } = useUiStore();
   const isMac = isMacUA();
 
   const p = paper.data;
@@ -214,128 +219,145 @@ function LoopView({ paperId }: { paperId: string }) {
   const openComments = shown.comments.filter((c) => !c.resolvedInVersion);
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex h-12 shrink-0 items-center gap-2 border-b border-faint px-6">
-        {sidebarCollapsed && (
-          <button
-            onClick={() => setSidebarCollapsed(false)}
-            aria-label="Expand sidebar"
-            title={`Expand sidebar (${isMac ? "⌘B" : "Ctrl+B"})`}
-            className="fade-in rounded p-1 text-text hover:bg-surface-2"
-          >
-            <PanelLeft size={14} strokeWidth={1.5} />
-          </button>
-        )}
-        <h1 className="min-w-0 truncate text-[13px] font-medium text-text">{p.title}</h1>
-        <span
-          className={cn(
-            "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ring-1",
-            selected ? "bg-ok/10 text-ok ring-ok/30" : "bg-warn/10 text-warn ring-warn/30",
+    <div className="flex h-full">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex h-12 shrink-0 items-center gap-2 border-b border-faint px-6">
+          {sidebarCollapsed && (
+            <button
+              onClick={() => setSidebarCollapsed(false)}
+              aria-label="Expand sidebar"
+              title={`Expand sidebar (${isMac ? "⌘B" : "Ctrl+B"})`}
+              className="fade-in rounded p-1 text-text hover:bg-surface-2"
+            >
+              <PanelLeft size={14} strokeWidth={1.5} />
+            </button>
           )}
-        >
-          {selected ? "Selected" : "In review"}
-        </span>
-        <div className="flex-1" />
-        {!selected && isLatest && (
-          <button
-            onClick={() => revise.mutate()}
-            disabled={revise.isPending}
-            className="flex items-center gap-1.5 rounded-input bg-accent px-3 py-1.5 text-xs font-medium text-accent-fg transition-opacity hover:opacity-90 disabled:opacity-50"
-            title="Ralph revises the paper to address the open review, then rescores"
-          >
-            {revise.isPending ? (
-              <>
-                <Loader2 size={13} className="animate-spin" />
-                <span>Revising & rescoring…</span>
-              </>
-            ) : (
-              <>
-                <Sparkles size={13} />
-                <span>Revise with AI</span>
-              </>
+          <h1 className="min-w-0 truncate text-[13px] font-medium text-text">{p.title}</h1>
+          <span
+            className={cn(
+              "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ring-1",
+              selected ? "bg-ok/10 text-ok ring-ok/30" : "bg-warn/10 text-warn ring-warn/30",
             )}
+          >
+            {selected ? "Selected" : "In review"}
+          </span>
+          <div className="flex-1" />
+          <button
+            onClick={() => setInspectorOpen(!inspectorOpen)}
+            className={cn(
+              "flex items-center gap-1 rounded-md px-1.5 py-1 text-xs transition-colors hover:bg-surface-2",
+              inspectorOpen ? "text-text" : "text-muted",
+            )}
+            title={inspectorOpen ? "Hide the manuscript pane" : "Show the manuscript pane"}
+          >
+            <FileText size={13} />
+            <span>Manuscript</span>
           </button>
-        )}
-      </div>
-
-      <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto flex max-w-[820px] flex-col gap-5 px-8 py-6">
-          {selected && isLatest && (
-            <div className="flex items-center gap-3 rounded-card border border-ok/30 bg-ok/10 px-4 py-3">
-              <Award size={18} className="shrink-0 text-ok" />
-              <div>
-                <div className="text-sm font-medium text-text">
-                  Selected — the score sits in the award-similar band.
-                </div>
-                <div className="text-xs text-muted">
-                  v{p.currentVersion} scored {shown.score.score}/100, at or above the selection
-                  threshold of {shown.score.selectThreshold}. The loop is complete.
-                </div>
-              </div>
-            </div>
-          )}
-
-          <ScoreHero version={shown} delta={delta} />
-
-          <VersionRail
-            versions={p.versions}
-            shownVersion={shown.version}
-            onPick={(v) => setViewVersion(v === p.currentVersion ? null : v)}
-          />
-
-          {shown.origin === "ai_revision" && shown.changeNote && (
-            <div className="rounded-card border border-border bg-surface p-4 shadow-card">
-              <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted">
-                <RefreshCw size={12} />
-                What this revision changed
-              </div>
-              <p className="mt-2 text-sm leading-relaxed text-text">{shown.changeNote}</p>
-            </div>
-          )}
-
-          <Attributions version={shown} />
-
-          {shown.comments.length > 0 && (
-            <div>
-              <div className="flex items-baseline justify-between px-1">
-                <div className="text-xs font-medium uppercase tracking-wider text-muted">
-                  Review — v{shown.version}
-                </div>
-                <div className="text-xs text-muted">
-                  {openComments.length} open · {shown.comments.length - openComments.length}{" "}
-                  resolved
-                </div>
-              </div>
-              <div className="mt-2 flex flex-col gap-2.5">
-                {shown.comments.map((c) => (
-                  <CommentCard key={c.id} severity={c.severity} section={c.section} body={c.body} resolvedInVersion={c.resolvedInVersion} />
-                ))}
-              </div>
-            </div>
-          )}
-
           {!selected && isLatest && (
-            <div className="flex items-center justify-between rounded-card border border-border bg-surface-2 px-4 py-3">
-              <div className="text-xs text-muted">
-                Ralph applies the open review to the manuscript, uploads it as v
-                {p.currentVersion + 1}, and rescores — the loop runs until selection.
-              </div>
-              <button
-                onClick={() => revise.mutate()}
-                disabled={revise.isPending}
-                className="ml-4 flex shrink-0 items-center gap-1.5 rounded-input bg-accent px-3 py-1.5 text-xs font-medium text-accent-fg transition-opacity hover:opacity-90 disabled:opacity-50"
-              >
-                {revise.isPending ? (
+            <button
+              onClick={() => revise.mutate()}
+              disabled={revise.isPending}
+              className="flex items-center gap-1.5 rounded-input bg-accent px-3 py-1.5 text-xs font-medium text-accent-fg transition-opacity hover:opacity-90 disabled:opacity-50"
+              title="Ralph revises the paper to address the open review, then rescores"
+            >
+              {revise.isPending ? (
+                <>
                   <Loader2 size={13} className="animate-spin" />
-                ) : (
+                  <span>Revising & rescoring…</span>
+                </>
+              ) : (
+                <>
                   <Sparkles size={13} />
-                )}
-                <span>{revise.isPending ? "Working…" : `Revise into v${p.currentVersion + 1}`}</span>
-              </button>
-            </div>
+                  <span>Revise with AI</span>
+                </>
+              )}
+            </button>
           )}
         </div>
+
+        <div className="flex-1 overflow-y-auto">
+          <div className="mx-auto flex max-w-[820px] flex-col gap-5 px-8 py-6">
+            {selected && isLatest && (
+              <div className="flex items-center gap-3 rounded-card border border-ok/30 bg-ok/10 px-4 py-3">
+                <Award size={18} className="shrink-0 text-ok" />
+                <div>
+                  <div className="text-sm font-medium text-text">
+                    Selected — the score sits in the award-similar band.
+                  </div>
+                  <div className="text-xs text-muted">
+                    v{p.currentVersion} scored {shown.score.score}/100, at or above the selection
+                    threshold of {shown.score.selectThreshold}. The loop is complete.
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <ScoreHero version={shown} delta={delta} />
+
+            <VersionRail
+              versions={p.versions}
+              shownVersion={shown.version}
+              onPick={(v) => setViewVersion(v === p.currentVersion ? null : v)}
+            />
+
+            {shown.origin === "ai_revision" && shown.changeNote && (
+              <div className="rounded-card border border-border bg-surface p-4 shadow-card">
+                <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted">
+                  <RefreshCw size={12} />
+                  What this revision changed
+                </div>
+                <p className="mt-2 text-sm leading-relaxed text-text">{shown.changeNote}</p>
+              </div>
+            )}
+
+            <Attributions version={shown} />
+
+            {shown.comments.length > 0 && (
+              <div>
+                <div className="flex items-baseline justify-between px-1">
+                  <div className="text-xs font-medium uppercase tracking-wider text-muted">
+                    Review — v{shown.version}
+                  </div>
+                  <div className="text-xs text-muted">
+                    {openComments.length} open · {shown.comments.length - openComments.length}{" "}
+                    resolved
+                  </div>
+                </div>
+                <div className="mt-2 flex flex-col gap-2.5">
+                  {shown.comments.map((c) => (
+                    <CommentCard key={c.id} severity={c.severity} section={c.section} body={c.body} resolvedInVersion={c.resolvedInVersion} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {!selected && isLatest && (
+              <div className="flex items-center justify-between rounded-card border border-border bg-surface-2 px-4 py-3">
+                <div className="text-xs text-muted">
+                  Ralph applies the open review to the manuscript, uploads it as v
+                  {p.currentVersion + 1}, and rescores — the loop runs until selection.
+                </div>
+                <button
+                  onClick={() => revise.mutate()}
+                  disabled={revise.isPending}
+                  className="ml-4 flex shrink-0 items-center gap-1.5 rounded-input bg-accent px-3 py-1.5 text-xs font-medium text-accent-fg transition-opacity hover:opacity-90 disabled:opacity-50"
+                >
+                  {revise.isPending ? (
+                    <Loader2 size={13} className="animate-spin" />
+                  ) : (
+                    <Sparkles size={13} />
+                  )}
+                  <span>{revise.isPending ? "Working…" : `Revise into v${p.currentVersion + 1}`}</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
+
+      {/* The manuscript of the version shown in the rail — reference
+          right-inspector pattern, resizable, closable from its header. */}
+      {inspectorOpen && <ManuscriptPane version={shown} />}
     </div>
   );
 }
