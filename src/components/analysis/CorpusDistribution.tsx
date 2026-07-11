@@ -43,10 +43,10 @@ const TIERS: Array<{ label: string; median: number }> = [
 
 export function CorpusDistribution({
   paper,
-  shownVersion,
+  shownCycle,
 }: {
   paper: LoopPaper;
-  shownVersion: number;
+  shownCycle: number;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<{ i: number; x: number; y: number } | null>(null);
@@ -55,15 +55,15 @@ export function CorpusDistribution({
   const maxCount = Math.max(...bins);
   const binPx = PLOT_W / bins.length;
 
-  const shown =
-    paper.versions.find((v) => v.version === shownVersion) ??
-    paper.versions[paper.versions.length - 1];
-  const threshold = shown.score.selectThreshold;
+  // Only decided cycles have a score to place on the distribution.
+  const scored = paper.cycles.filter((c) => c.score);
+  const shown = scored.find((c) => c.cycle === shownCycle) ?? scored[scored.length - 1];
+  const threshold = shown.score!.selectThreshold;
   const xT = xFor(threshold);
 
-  const points = [...paper.versions]
-    .sort((a, b) => a.version - b.version)
-    .map((v) => ({ version: v.version, score: v.score.score, x: xFor(v.score.score) }));
+  const points = [...scored]
+    .sort((a, b) => a.cycle - b.cycle)
+    .map((c) => ({ version: c.cycle, score: c.score!.score, x: xFor(c.score!.score) }));
 
   const onMove = (i: number) => (e: ReactMouseEvent) => {
     const r = wrapRef.current?.getBoundingClientRect();
@@ -90,7 +90,7 @@ export function CorpusDistribution({
           viewBox="0 0 760 240"
           className="block h-auto w-full"
           role="img"
-          aria-label={`Histogram of ${total.toLocaleString()} corpus selection scores with this paper's versions marked; v${shown.version} scored ${shown.score.score}.`}
+          aria-label={`Histogram of ${total.toLocaleString()} corpus selection scores with this paper's cycles marked; C${shown.cycle} scored ${shown.score!.score}.`}
         >
           {/* Selection band: threshold → 100 */}
           <rect
@@ -213,7 +213,7 @@ export function CorpusDistribution({
 
           {/* Version dots — accent with a 2px surface ring, directly labeled */}
           {points.map((pt) => {
-            const isShown = pt.version === shown.version;
+            const isShown = pt.version === shown.cycle;
             return (
               <g key={pt.version}>
                 <circle
@@ -237,7 +237,7 @@ export function CorpusDistribution({
                     style={{ paintOrder: "stroke" }}
                     className="font-mono"
                   >
-                    v{pt.version} · {pt.score}
+                    C{pt.version} · {pt.score}
                   </text>
                 ) : (
                   <text
@@ -251,7 +251,7 @@ export function CorpusDistribution({
                     strokeLinejoin="round"
                     style={{ paintOrder: "stroke" }}
                   >
-                    v{pt.version}
+                    C{pt.version}
                   </text>
                 )}
               </g>

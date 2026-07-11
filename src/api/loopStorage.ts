@@ -73,8 +73,8 @@ export async function persistPaper(paper: LoopPaper, pdfBlobs: Record<number, Bl
     const db = await openDb();
     // Strip session-scoped object URLs before storing; they are re-issued on load.
     const clean: LoopPaper = structuredClone(paper);
-    for (const v of clean.versions) {
-      if (v.manuscript.kind === "pdf") delete v.manuscript.url;
+    for (const c of clean.cycles) {
+      if (c.manuscript.kind === "pdf") delete c.manuscript.url;
     }
     await new Promise<void>((resolve, reject) => {
       const tx = db.transaction(STORE, "readwrite");

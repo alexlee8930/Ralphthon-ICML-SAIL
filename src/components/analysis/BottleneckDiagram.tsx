@@ -1,5 +1,5 @@
 import { useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
-import type { LoopVersion } from "@/api/reviewLoop";
+import type { LoopCycle } from "@/api/reviewLoop";
 
 /**
  * Score-bottleneck diagram: manuscript → 12 backbone blocks (mean activation
@@ -30,11 +30,11 @@ function barX(i: number): number {
   return x;
 }
 
-export function BottleneckDiagram({ version }: { version: LoopVersion }) {
+export function BottleneckDiagram({ cycle }: { cycle: LoopCycle }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<{ i: number; x: number; y: number } | null>(null);
 
-  const s = version.score;
+  const s = cycle.score!;
   const selected = s.score >= s.selectThreshold;
   const neckCx = barX(NECK_I) + NECK_W / 2;
   const neckTop = BASELINE - (s.layers[NECK_I] ?? 0) * MAX_H;
@@ -42,7 +42,7 @@ export function BottleneckDiagram({ version }: { version: LoopVersion }) {
   const heads: Array<{ title: string; sub: string; subFill: string }> = [
     {
       title: "Head ① Review",
-      sub: `${version.comments.length} comments`,
+      sub: `${cycle.comments.length} comments`,
       subFill: "var(--muted)",
     },
     { title: "Head ② Synthesis", sub: "meta-review", subFill: "var(--muted)" },
@@ -69,7 +69,7 @@ export function BottleneckDiagram({ version }: { version: LoopVersion }) {
           viewBox="0 0 760 260"
           className="block h-auto w-full"
           role="img"
-          aria-label={`Backbone activations for v${version.version}; the score ${s.score} is read at block 8 and feeds the review, synthesis, and decision heads.`}
+          aria-label={`Backbone activations for C${cycle.cycle}; the score ${s.score} is read at block 8 and feeds the review, synthesis, and decision heads.`}
         >
           {/* Baseline: manuscript → first bar → bar-to-bar */}
           <line
@@ -110,7 +110,7 @@ export function BottleneckDiagram({ version }: { version: LoopVersion }) {
             fill="var(--muted)"
             className="font-mono"
           >
-            v{version.version}
+            C{cycle.cycle}
           </text>
 
           {/* Layer bars — single hue, light→dark = magnitude */}

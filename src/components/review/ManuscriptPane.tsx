@@ -1,9 +1,21 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useRecoilValue } from "recoil";
-import { ExternalLink, X } from "lucide-react";
+import { Check, ExternalLink, Loader2, Pencil, X } from "lucide-react";
 import { INSPECTOR_MAX, INSPECTOR_MIN, manuscriptHighlightState, useUiStore } from "@/lib/store";
 import { cn } from "@/lib/cn";
-import type { LoopVersion } from "@/api/reviewLoop";
+import { useEditManuscript } from "@/api/reviewLoopQueries";
+import type { LoopCycle } from "@/api/reviewLoop";
+
+/** Strip active content from an agent-generated SVG before inlining it:
+ *  scripts, event handlers, javascript: URLs, and foreignObject. */
+function sanitizeSvg(svg: string): string {
+  return svg
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<foreignObject[\s\S]*?<\/foreignObject>/gi, "")
+    .replace(/\son\w+\s*=\s*"[^"]*"/gi, "")
+    .replace(/\son\w+\s*=\s*'[^']*'/gi, "")
+    .replace(/javascript:/gi, "");
+}
 
 /**
  * Right-hand manuscript pane for the review loop — the reference
@@ -80,6 +92,24 @@ function ManuscriptText({ text }: { text: string }) {
       {blocks.map((block, i) => {
         const t = block.trim();
         if (t === "---") return <hr key={i} className="border-faint" />;
+        if (t.startsWith("```svg")) {
+          const inner = t.replace(/^```svg\s*/, "").replace(/```\s*$/, "");
+          return (
+            <div
+              key={i}
+              className="overflow-x-auto rounded-card border border-border bg-surface-2/40 p-3 [&_svg]:h-auto [&_svg]:max-w-full"
+              dangerouslySetInnerHTML={{ __html: sanitizeSvg(inner) }}
+            />
+          );
+        }
+        if (t.startsWith("```")) {
+          const inner = t.replace(/^```[a-z]*\s*/i, "").replace(/```\s*$/, "");
+          return (
+            <pre key={i} className="overflow-x-auto rounded-card bg-surface-2/60 p-3 font-mono text-xs">
+              {inner}
+            </pre>
+          );
+        }
         if (t.startsWith("### "))
           return (
             <h3 key={i} className="mt-2 text-[15px] font-semibold tracking-tight">
@@ -108,8 +138,19 @@ function ManuscriptText({ text }: { text: string }) {
   );
 }
 
-export function ManuscriptPane({ version }: { version: LoopVersion }) {
+export function ManuscriptPane({
+  cycle,
+  paperId,
+  editable,
+}: {
+  cycle: LoopCycle;
+  paperId: string;
+  editable: boolean;
+}) {
   const { inspectorWidth, setInspectorWidth, setInspectorOpen } = useUiStore();
+  const editManuscript = useEditManuscript(paperId);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
   // Live width during a drag; the store (and localStorage) only update on
   // pointer-up — same contract as the reference RightPane.
   const [dragWidth, setDragWidth] = useState<number | null>(null);
@@ -134,7 +175,11 @@ export function ManuscriptPane({ version }: { version: LoopVersion }) {
     setDragWidth(null);
   };
 
-  const m = version.manuscript;
+  const m = cycle.manuscript;
+  // After the author applies revision hunks, the pane shows the revised draft
+  // (what the next cycle will submit); before that, the reviewed manuscript.
+  const shownText = cycle.draftManuscript ?? m.text;
+  const isDraft = cycle.draftManuscript !== undefined;
 
   return (
     <div
@@ -156,12 +201,57 @@ export function ManuscriptPane({ version }: { version: LoopVersion }) {
       <div className="flex h-12 shrink-0 items-center gap-2 border-b border-faint px-4">
         <span className="text-[13px] font-medium text-text">Manuscript</span>
         <span className="shrink-0 rounded-full border border-border bg-surface-2 px-2 py-0.5 font-mono text-[10px] text-muted">
-          v{version.version}
+          C{cycle.cycle}
         </span>
+        {isDraft && (
+          <span className="shrink-0 rounded-full bg-ok/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-ok ring-1 ring-ok/30">
+            revised draft
+          </span>
+        )}
         {m.fileName && (
           <span className="min-w-0 truncate text-xs text-muted">{m.fileName}</span>
         )}
         <div className="flex-1" />
+        {editable && !editing && shownText !== undefined && (
+          <button
+            onClick={() => {
+              setDraft(shownText ?? "");
+              setEditing(true);
+            }}
+            title="Edit the manuscript directly — the edit is logged into the rebuttal thread"
+            className="flex items-center gap-1 rounded px-1.5 py-1 text-xs text-muted hover:bg-surface-2 hover:text-text"
+          >
+            <Pencil size={12} />
+            <span>Edit</span>
+          </button>
+        )}
+        {editing && (
+          <>
+            <button
+              onClick={() => {
+                editManuscript.mutate(
+                  { text: draft },
+                  { onSuccess: () => setEditing(false) },
+                );
+              }}
+              disabled={!draft.trim() || editManuscript.isPending}
+              className="flex items-center gap-1 rounded-input bg-accent px-2 py-1 text-xs font-medium text-accent-fg hover:opacity-90 disabled:opacity-50"
+            >
+              {editManuscript.isPending ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : (
+                <Check size={12} />
+              )}
+              <span>Save</span>
+            </button>
+            <button
+              onClick={() => setEditing(false)}
+              className="rounded px-1.5 py-1 text-xs text-muted hover:bg-surface-2 hover:text-text"
+            >
+              Cancel
+            </button>
+          </>
+        )}
         <button
           onClick={() => setInspectorOpen(false)}
           aria-label="Close manuscript"
@@ -173,7 +263,14 @@ export function ManuscriptPane({ version }: { version: LoopVersion }) {
       </div>
 
       <div className="min-h-0 flex-1">
-        {m.kind === "pdf" ? (
+        {editing ? (
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            className="h-full w-full resize-none bg-surface px-6 py-5 font-mono text-[12.5px] leading-relaxed text-text outline-none"
+            spellCheck={false}
+          />
+        ) : m.kind === "pdf" && !isDraft ? (
           m.url ? (
             <div className="flex h-full flex-col">
               {/* Inline preview needs the browser PDF viewer; the link covers
@@ -199,8 +296,8 @@ export function ManuscriptPane({ version }: { version: LoopVersion }) {
         ) : (
           <div className="h-full overflow-y-auto">
             <div className="px-6 py-5">
-              {m.text ? (
-                <ManuscriptText text={m.text} />
+              {shownText ? (
+                <ManuscriptText text={shownText} />
               ) : (
                 <span className="font-sans text-sm text-muted">
                   This version has no manuscript text.

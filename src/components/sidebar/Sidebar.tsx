@@ -14,12 +14,13 @@ import { StatusPills } from "./StatusPills";
  *  back past it re-expands. Sits below SIDEBAR_MIN so there is a clear "snap". */
 const COLLAPSE_BELOW = 140;
 
-/** The score shown next to a paper: the current (latest) version's score. */
+/** The score shown next to a paper: the latest decided cycle's, if any. */
 function latestScore(paper: LoopPaper): number | undefined {
-  const latest =
-    paper.versions.find((v) => v.version === paper.currentVersion) ??
-    paper.versions[paper.versions.length - 1];
-  return latest?.score.score;
+  for (let i = paper.cycles.length - 1; i >= 0; i--) {
+    const s = paper.cycles[i].score;
+    if (s) return s.score;
+  }
+  return undefined;
 }
 
 export function Sidebar() {
@@ -140,12 +141,12 @@ export function Sidebar() {
               <span
                 className={cn(
                   "h-1.5 w-1.5 shrink-0 rounded-full",
-                  paper.status === "selected" ? "bg-ok" : "bg-warn",
+                  paper.cycles.some((c) => c.decision === "accept") ? "bg-ok" : "bg-warn",
                 )}
               />
               <span className="flex-1 truncate">{paper.title}</span>
               <span className="ml-auto shrink-0 font-mono text-[11px] text-muted group-hover:hidden">
-                {latestScore(paper)}
+                {latestScore(paper) ?? "·"}
               </span>
               <button
                 onClick={(e) => {
