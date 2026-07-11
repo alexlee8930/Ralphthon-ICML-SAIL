@@ -93,12 +93,14 @@ export function Sidebar() {
       <div className={cn("px-4 pb-3", overlayTitlebar ? "pt-1" : "pt-4")}>
         <div className="flex items-baseline gap-1.5">
           <Award size={18} strokeWidth={2} className="shrink-0 self-center text-accent" aria-hidden />
-          <div className="min-w-0 truncate font-serif text-[17px] font-semibold leading-none tracking-tight text-text">
-            ICML SAIL
+          <div className="min-w-0">
+            <div className="truncate font-serif text-[17px] font-semibold leading-none tracking-tight text-text">
+              ICML SAIL
+            </div>
+            <div className="mt-1 whitespace-nowrap text-[10px] uppercase tracking-widest text-muted">
+              with Ralph
+            </div>
           </div>
-          <span className="shrink-0 whitespace-nowrap text-[10px] uppercase tracking-widest text-muted">
-            with Ralph
-          </span>
           {!overlayTitlebar && (
             <button
               onClick={toggleSidebar}
