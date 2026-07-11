@@ -54,9 +54,13 @@ export interface ReviewComment {
 }
 
 /** The manuscript a version was scored on. Text submissions carry the full
- *  text (AI revisions append a "Revision notes" section per round); PDF
- *  submissions carry an object/remote URL for rendering plus the accumulated
- *  revision notes in `text`. */
+ *  text (AI revisions append a "Revision notes" section per round).
+ *
+ *  Real API note (adapter v1, 2026-07-11): PDF submissions are text-extracted
+ *  server-side (pymupdf) and come back as kind "text" with the extracted
+ *  full text — `url` is not provided yet, so the pane renders the text view.
+ *  kind "pdf" + `url` stays supported for the mock and for a future
+ *  PDF-serving endpoint. */
 export interface LoopManuscript {
   kind: "text" | "pdf";
   /** kind 'text': the full manuscript text. kind 'pdf': accumulated revision notes. */
