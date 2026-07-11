@@ -34,8 +34,19 @@ npm run dev        # http://localhost:5199 — standalone on the built-in mock
 Connect the real agent API later with one env var (the mock is bypassed):
 
 ```bash
-echo 'VITE_RALPH_API_URL=http://localhost:8000' > .env.local
+echo 'VITE_RALPH_API_URL=http://localhost:8100' > .env.local   # 8000은 로컬 Sophy와 충돌
 ```
+
+### 실 어댑터 연결 메모 (2026-07-11, 백엔드 어댑터 v1 기준)
+
+- 어댑터: `icml-ac/serve/sail_adapter.py` (로컬 :8100) — 5개 엔드포인트 계약 전부 구현,
+  CORS 허용, `sail_state.json` 영속. 파이프라인: Claude 리뷰 3개 병렬 → v2 LoRA 메타리뷰
+  (VESSL) → 이슈 코멘트 구조화 → p_accept×100 점수.
+- 제출/수정 지연 ~30-60초 (scoring 상태로 커버).
+- **PDF 제출은 서버에서 텍스트 추출되어 `manuscript.kind: "text"`로 반환** — PDF embed가
+  필요해지면 PDF 서빙 엔드포인트(GET .../versions/:v/pdf 등) 계약을 정해서 알려주세요.
+- `score.attributions`는 v1에선 근사(코멘트 키워드→원고 문장 매칭), `layers`는 점수 연동
+  근사값. 점수 캘리브레이션(양극단 완화)은 백엔드 후속 작업.
 
 ---
 
