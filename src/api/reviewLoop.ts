@@ -103,6 +103,8 @@ export interface SubmitLoopPaperInput {
 // Mock simulation
 // ---------------------------------------------------------------------------
 
+import { loadStoredPapers, persistPaper } from "./loopStorage";
+
 const BASE = import.meta.env.VITE_RALPH_API_URL as string | undefined;
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const now = () => new Date().toISOString();
@@ -351,6 +353,45 @@ Confidence-ordered curricula appear to transfer the teacher's *decision to rely 
   loopPapers.push(p);
 })();
 
+/** Raw uploaded PDFs per paper (version → Blob) — persisted alongside the
+ *  paper so object URLs can be re-issued after a reload. */
+const pdfBlobsByPaper = new Map<string, Record<number, Blob>>();
+
+/** Restore accumulated history (papers, reviews, manuscripts, PDF blobs) from
+ *  IndexedDB once per session. The seeded demo stays code-defined. */
+let hydration: Promise<void> | null = null;
+function ensureHydrated(): Promise<void> {
+  if (!hydration) {
+    hydration = (async () => {
+      const stored = await loadStoredPapers();
+      let maxSeq = 0;
+      for (const { paper, pdfBlobs } of stored) {
+        if (paper.id === "lp_demo") continue;
+        if (loopPapers.some((x) => x.id === paper.id)) continue;
+        for (const v of paper.versions) {
+          if (v.manuscript.kind === "pdf") {
+            const blob = pdfBlobs?.[v.version];
+            if (blob) v.manuscript.url = URL.createObjectURL(blob);
+          }
+        }
+        pdfBlobsByPaper.set(paper.id, pdfBlobs ?? {});
+        loopPapers.push(paper);
+        const n = Number(paper.id.replace("lp_", ""));
+        if (Number.isFinite(n)) maxSeq = Math.max(maxSeq, n);
+      }
+      seq = Math.max(seq, maxSeq + 1);
+      // Newest first, demo pinned last among equals by its early createdAt.
+      loopPapers.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+    })();
+  }
+  return hydration;
+}
+
+function persist(p: LoopPaper) {
+  if (p.id === "lp_demo") return;
+  void persistPaper(p, pdfBlobsByPaper.get(p.id) ?? {});
+}
+
 async function http<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, init);
   if (!res.ok) throw new Error(`API ${res.status} ${path}`);
@@ -362,12 +403,14 @@ export const loopApi = {
 
   async list(): Promise<LoopPaper[]> {
     if (BASE) return http("/api/loop/papers");
+    await ensureHydrated();
     await delay(150);
     return [...loopPapers];
   },
 
   async get(id: string): Promise<LoopPaper> {
     if (BASE) return http(`/api/loop/papers/${id}`);
+    await ensureHydrated();
     await delay(150);
     const p = loopPapers.find((x) => x.id === id);
     if (!p) throw new Error(`paper ${id} not found`);
@@ -387,6 +430,7 @@ export const loopApi = {
       if (input.text) form.set("text", input.text);
       return http("/api/loop/papers", { method: "POST", body: form });
     }
+    await ensureHydrated();
     await delay(1400); // scoring pass
     const id = `lp_${seq++}`;
     const p: LoopPaper = {
@@ -399,7 +443,9 @@ export const loopApi = {
       createdAt: now(),
     };
     p.status = p.versions[0].score.score >= SELECT_THRESHOLD ? "selected" : "in_review";
+    if (input.file) pdfBlobsByPaper.set(id, { 1: input.file });
     loopPapers.unshift(p);
+    persist(p);
     return structuredClone(p);
   },
 
@@ -407,6 +453,7 @@ export const loopApi = {
    *  the new version is rescored, and — if still short — re-reviewed. */
   async revise(id: string): Promise<LoopPaper> {
     if (BASE) return http(`/api/loop/papers/${id}/revise`, { method: "POST" });
+    await ensureHydrated();
     await delay(1800); // revise + rescore pass
     const p = loopPapers.find((x) => x.id === id);
     if (!p) throw new Error(`paper ${id} not found`);
@@ -417,6 +464,9 @@ export const loopApi = {
     resolveOldComments(p, nextV);
     p.currentVersion = nextV;
     p.status = p.versions[nextV - 1].score.score >= SELECT_THRESHOLD ? "selected" : "in_review";
+    const blobs = pdfBlobsByPaper.get(p.id);
+    if (blobs?.[nextV - 1]) blobs[nextV] = blobs[nextV - 1]; // same file, new version
+    persist(p);
     return structuredClone(p);
   },
 };

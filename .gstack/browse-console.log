@@ -1,0 +1,558 @@
+[2026-07-11T07:34:03.294Z] [debug] [vite] connecting...
+[2026-07-11T07:34:03.374Z] [debug] [vite] connected.
+[2026-07-11T07:34:03.395Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T07:34:03.452Z] [error] Failed to load resource: net::ERR_INVALID_URL
+[2026-07-11T07:34:05.639Z] [debug] [vite] connecting...
+[2026-07-11T07:34:05.640Z] [debug] [vite] connected.
+[2026-07-11T07:34:05.644Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T07:34:05.673Z] [error] Failed to load resource: net::ERR_INVALID_URL
+[2026-07-11T07:35:50.388Z] [debug] [vite] hot updated: /src/components/review/ManuscriptPane.tsx
+[2026-07-11T07:35:50.388Z] [debug] [vite] hot updated: /src/index.css
+[2026-07-11T07:35:50.408Z] [error] Error handled by React Router default ErrorBoundary: ReferenceError: ManuscriptText is not defined
+    at ManuscriptPane (http://localhost:5199/src/components/review/ManuscriptPane.tsx?t=1783755350329:133:50)
+    at renderWithHooks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:9632:19)
+    at updateFunctionComponent (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:12122:19)
+    at beginWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:13096:13)
+    at beginWork$1 (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15982:12)
+    at performUnitOfWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15568:12)
+    at workLoopSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15517:36)
+    at renderRootSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15500:6)
+    at performSyncWorkOnRoot (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15299:21)
+    at flushSyncCallbacks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:7802:19)
+[2026-07-11T07:35:50.408Z] [error] Error handled by React Router default ErrorBoundary: ReferenceError: ManuscriptText is not defined
+    at ManuscriptPane (http://localhost:5199/src/components/review/ManuscriptPane.tsx?t=1783755350329:133:50)
+    at renderWithHooks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:9632:19)
+    at updateFunctionComponent (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:12122:19)
+    at beginWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:13096:13)
+    at beginWork$1 (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15982:12)
+    at performUnitOfWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15568:12)
+    at workLoopSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15517:36)
+    at renderRootSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15500:6)
+    at performSyncWorkOnRoot (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15299:21)
+    at flushSyncCallbacks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:7802:19)
+[2026-07-11T07:35:50.410Z] [error] Error handled by React Router default ErrorBoundary: ReferenceError: ManuscriptText is not defined
+    at ManuscriptPane (http://localhost:5199/src/components/review/ManuscriptPane.tsx?t=1783755350329:133:50)
+    at renderWithHooks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:9632:19)
+    at updateFunctionComponent (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:12122:19)
+    at beginWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:13096:13)
+    at beginWork$1 (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15982:12)
+    at performUnitOfWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15568:12)
+    at workLoopSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15517:36)
+    at renderRootSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15500:6)
+    at recoverFromConcurrentError (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15193:21)
+    at performSyncWorkOnRoot (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15304:19)
+[2026-07-11T07:35:50.410Z] [error] Error handled by React Router default ErrorBoundary: ReferenceError: ManuscriptText is not defined
+    at ManuscriptPane (http://localhost:5199/src/components/review/ManuscriptPane.tsx?t=1783755350329:133:50)
+    at renderWithHooks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:9632:19)
+    at updateFunctionComponent (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:12122:19)
+    at beginWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:13096:13)
+    at beginWork$1 (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15982:12)
+    at performUnitOfWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15568:12)
+    at workLoopSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15517:36)
+    at renderRootSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15500:6)
+    at recoverFromConcurrentError (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15193:21)
+    at performSyncWorkOnRoot (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15304:19)
+[2026-07-11T07:35:50.411Z] [error] The above error occurred in the <ManuscriptPane> component:
+
+    at ManuscriptPane (http://localhost:5199/src/components/review/ManuscriptPane.tsx?t=1783755350329:16:34)
+    at div
+    at LoopView (http://localhost:5199/src/app/routes/ReviewLoopPage.tsx?t=1783754722278:362:21)
+    at ReviewLoopPage (http://localhost:5199/src/app/routes/ReviewLoopPage.tsx?t=1783754722278:22:22)
+    at RenderedRoute (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4142:26)
+    at Outlet (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4769:25)
+    at div
+    at main
+    at div
+    at AppShell (http://localhost:5199/src/app/layout/AppShell.tsx?t=1783755055417:14:52)
+    at RenderedRoute (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4142:26)
+    at RenderErrorBoundary (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4076:3)
+    at DataRoutes2 (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4709:24)
+    at Router (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4774:29)
+    at RouterProvider (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4519:27)
+    at RouterProvider2
+    at ThemeProvider (http://localhost:5199/src/app/providers/ThemeProvider.tsx:8:33)
+    at QueryClientProvider (http://localhost:5199/node_modules/.vite/deps/@tanstack_react-query.js?v=22d1cecb:2553:30)
+    at RecoilRoot_INTERNAL (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:2764:32)
+    at RecoilRoot (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:2840:10)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary.
+[2026-07-11T07:35:50.411Z] [error] React Router caught the following error during render ReferenceError: ManuscriptText is not defined
+    at ManuscriptPane (http://localhost:5199/src/components/review/ManuscriptPane.tsx?t=1783755350329:133:50)
+    at renderWithHooks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:9632:19)
+    at updateFunctionComponent (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:12122:19)
+    at beginWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:13096:13)
+    at beginWork$1 (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15982:12)
+    at performUnitOfWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15568:12)
+    at workLoopSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15517:36)
+    at renderRootSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15500:6)
+    at recoverFromConcurrentError (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15193:21)
+    at performSyncWorkOnRoot (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15304:19)
+[2026-07-11T07:35:55.569Z] [debug] [vite] hot updated: /src/components/review/ManuscriptPane.tsx
+[2026-07-11T07:35:55.569Z] [debug] [vite] hot updated: /src/index.css
+[2026-07-11T07:35:55.587Z] [error] Failed to load resource: net::ERR_INVALID_URL
+[2026-07-11T07:36:15.267Z] [debug] [vite] connecting...
+[2026-07-11T07:36:15.272Z] [debug] [vite] connected.
+[2026-07-11T07:36:15.282Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T07:36:15.298Z] [error] Failed to load resource: net::ERR_INVALID_URL
+[2026-07-11T07:37:14.393Z] [debug] [vite] hot updated: /src/components/sidebar/Sidebar.tsx
+[2026-07-11T07:37:14.393Z] [debug] [vite] hot updated: /src/index.css
+[2026-07-11T07:37:14.413Z] [error] Error handled by React Router default ErrorBoundary: ReferenceError: Award is not defined
+    at Sidebar (http://localhost:5199/src/components/sidebar/Sidebar.tsx?t=1783755434296:94:32)
+    at renderWithHooks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:9632:19)
+    at updateFunctionComponent (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:12122:19)
+    at beginWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:13096:13)
+    at beginWork$1 (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15982:12)
+    at performUnitOfWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15568:12)
+    at workLoopSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15517:36)
+    at renderRootSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15500:6)
+    at performSyncWorkOnRoot (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15299:21)
+    at flushSyncCallbacks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:7802:19)
+[2026-07-11T07:37:14.413Z] [error] Error handled by React Router default ErrorBoundary: ReferenceError: Award is not defined
+    at Sidebar (http://localhost:5199/src/components/sidebar/Sidebar.tsx?t=1783755434296:94:32)
+    at renderWithHooks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:9632:19)
+    at updateFunctionComponent (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:12122:19)
+    at beginWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:13096:13)
+    at beginWork$1 (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15982:12)
+    at performUnitOfWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15568:12)
+    at workLoopSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15517:36)
+    at renderRootSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15500:6)
+    at performSyncWorkOnRoot (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15299:21)
+    at flushSyncCallbacks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:7802:19)
+[2026-07-11T07:37:14.413Z] [error] Error handled by React Router default ErrorBoundary: ReferenceError: Award is not defined
+    at Sidebar (http://localhost:5199/src/components/sidebar/Sidebar.tsx?t=1783755434296:94:32)
+    at renderWithHooks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:9632:19)
+    at updateFunctionComponent (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:12122:19)
+    at beginWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:13096:13)
+    at beginWork$1 (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15982:12)
+    at performUnitOfWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15568:12)
+    at workLoopSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15517:36)
+    at renderRootSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15500:6)
+    at recoverFromConcurrentError (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15193:21)
+    at performSyncWorkOnRoot (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15304:19)
+[2026-07-11T07:37:14.413Z] [error] Error handled by React Router default ErrorBoundary: ReferenceError: Award is not defined
+    at Sidebar (http://localhost:5199/src/components/sidebar/Sidebar.tsx?t=1783755434296:94:32)
+    at renderWithHooks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:9632:19)
+    at updateFunctionComponent (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:12122:19)
+    at beginWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:13096:13)
+    at beginWork$1 (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15982:12)
+    at performUnitOfWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15568:12)
+    at workLoopSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15517:36)
+    at renderRootSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15500:6)
+    at recoverFromConcurrentError (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15193:21)
+    at performSyncWorkOnRoot (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15304:19)
+[2026-07-11T07:37:14.413Z] [error] The above error occurred in the <Sidebar> component:
+
+    at Sidebar (http://localhost:5199/src/components/sidebar/Sidebar.tsx?t=1783755434296:22:19)
+    at div
+    at AppShell (http://localhost:5199/src/app/layout/AppShell.tsx?t=1783755055417:14:52)
+    at RenderedRoute (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4142:26)
+    at RenderErrorBoundary (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4076:3)
+    at DataRoutes2 (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4709:24)
+    at Router (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4774:29)
+    at RouterProvider (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4519:27)
+    at RouterProvider2
+    at ThemeProvider (http://localhost:5199/src/app/providers/ThemeProvider.tsx:8:33)
+    at QueryClientProvider (http://localhost:5199/node_modules/.vite/deps/@tanstack_react-query.js?v=22d1cecb:2553:30)
+    at RecoilRoot_INTERNAL (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:2764:32)
+    at RecoilRoot (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:2840:10)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary.
+[2026-07-11T07:37:14.413Z] [error] React Router caught the following error during render ReferenceError: Award is not defined
+    at Sidebar (http://localhost:5199/src/components/sidebar/Sidebar.tsx?t=1783755434296:94:32)
+    at renderWithHooks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:9632:19)
+    at updateFunctionComponent (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:12122:19)
+    at beginWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:13096:13)
+    at beginWork$1 (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15982:12)
+    at performUnitOfWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15568:12)
+    at workLoopSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15517:36)
+    at renderRootSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15500:6)
+    at recoverFromConcurrentError (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15193:21)
+    at performSyncWorkOnRoot (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15304:19)
+[2026-07-11T07:37:15.794Z] [debug] [vite] connecting...
+[2026-07-11T07:37:15.800Z] [debug] [vite] connected.
+[2026-07-11T07:37:15.813Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T07:37:15.827Z] [error] Error handled by React Router default ErrorBoundary: ReferenceError: Award is not defined
+    at Sidebar (http://localhost:5199/src/components/sidebar/Sidebar.tsx?t=1783755434296:94:32)
+    at renderWithHooks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:9632:19)
+    at mountIndeterminateComponent (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:12362:12)
+    at beginWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:13089:41)
+    at beginWork$1 (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15982:12)
+    at performUnitOfWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15568:12)
+    at workLoopSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15517:36)
+    at renderRootSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15500:6)
+    at performConcurrentWorkOnRoot (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15140:146)
+    at workLoop (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:172:33)
+[2026-07-11T07:37:15.827Z] [error] Error handled by React Router default ErrorBoundary: ReferenceError: Award is not defined
+    at Sidebar (http://localhost:5199/src/components/sidebar/Sidebar.tsx?t=1783755434296:94:32)
+    at renderWithHooks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:9632:19)
+    at mountIndeterminateComponent (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:12362:12)
+    at beginWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:13089:41)
+    at beginWork$1 (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15982:12)
+    at performUnitOfWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15568:12)
+    at workLoopSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15517:36)
+    at renderRootSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15500:6)
+    at performConcurrentWorkOnRoot (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15140:146)
+    at workLoop (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:172:33)
+[2026-07-11T07:37:15.828Z] [error] Error handled by React Router default ErrorBoundary: ReferenceError: Award is not defined
+    at Sidebar (http://localhost:5199/src/components/sidebar/Sidebar.tsx?t=1783755434296:94:32)
+    at renderWithHooks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:9632:19)
+    at mountIndeterminateComponent (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:12362:12)
+    at beginWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:13089:41)
+    at beginWork$1 (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15982:12)
+    at performUnitOfWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15568:12)
+    at workLoopSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15517:36)
+    at renderRootSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15500:6)
+    at recoverFromConcurrentError (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15193:21)
+    at performConcurrentWorkOnRoot (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15146:20)
+[2026-07-11T07:37:15.828Z] [error] Error handled by React Router default ErrorBoundary: ReferenceError: Award is not defined
+    at Sidebar (http://localhost:5199/src/components/sidebar/Sidebar.tsx?t=1783755434296:94:32)
+    at renderWithHooks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:9632:19)
+    at mountIndeterminateComponent (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:12362:12)
+    at beginWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:13089:41)
+    at beginWork$1 (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15982:12)
+    at performUnitOfWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15568:12)
+    at workLoopSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15517:36)
+    at renderRootSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15500:6)
+    at recoverFromConcurrentError (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15193:21)
+    at performConcurrentWorkOnRoot (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15146:20)
+[2026-07-11T07:37:15.829Z] [error] The above error occurred in the <Sidebar> component:
+
+    at Sidebar (http://localhost:5199/src/components/sidebar/Sidebar.tsx?t=1783755434296:22:19)
+    at div
+    at AppShell (http://localhost:5199/src/app/layout/AppShell.tsx?t=1783755434296:14:52)
+    at RenderedRoute (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4142:26)
+    at RenderErrorBoundary (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4076:3)
+    at DataRoutes2 (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4709:24)
+    at Router (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4774:29)
+    at RouterProvider (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4519:27)
+    at RouterProvider2
+    at ThemeProvider (http://localhost:5199/src/app/providers/ThemeProvider.tsx:8:33)
+    at QueryClientProvider (http://localhost:5199/node_modules/.vite/deps/@tanstack_react-query.js?v=22d1cecb:2553:30)
+    at RecoilRoot_INTERNAL (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:2764:32)
+    at RecoilRoot (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:2840:10)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary.
+[2026-07-11T07:37:15.829Z] [error] React Router caught the following error during render ReferenceError: Award is not defined
+    at Sidebar (http://localhost:5199/src/components/sidebar/Sidebar.tsx?t=1783755434296:94:32)
+    at renderWithHooks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:9632:19)
+    at mountIndeterminateComponent (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:12362:12)
+    at beginWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:13089:41)
+    at beginWork$1 (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15982:12)
+    at performUnitOfWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15568:12)
+    at workLoopSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15517:36)
+    at renderRootSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15500:6)
+    at recoverFromConcurrentError (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15193:21)
+    at performConcurrentWorkOnRoot (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15146:20)
+[2026-07-11T07:37:36.051Z] [debug] [vite] hot updated: /src/components/sidebar/Sidebar.tsx
+[2026-07-11T07:37:36.051Z] [debug] [vite] hot updated: /src/index.css
+[2026-07-11T07:37:37.921Z] [debug] [vite] connecting...
+[2026-07-11T07:37:37.926Z] [debug] [vite] connected.
+[2026-07-11T07:37:37.931Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T07:38:03.692Z] [debug] [vite] connecting...
+[2026-07-11T07:38:03.694Z] [debug] [vite] connected.
+[2026-07-11T07:38:03.704Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T07:39:28.133Z] [debug] [vite] connecting...
+[2026-07-11T07:39:28.139Z] [debug] [vite] connected.
+[2026-07-11T07:39:28.144Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T07:40:32.237Z] [debug] [vite] hot updated: /src/components/review/ManuscriptPane.tsx
+[2026-07-11T07:40:32.237Z] [debug] [vite] hot updated: /src/index.css
+[2026-07-11T07:40:32.305Z] [error] Error handled by React Router default ErrorBoundary: ReferenceError: ExternalLink is not defined
+    at ManuscriptPane (http://localhost:5199/src/components/review/ManuscriptPane.tsx?t=1783755632178:177:43)
+    at renderWithHooks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:9632:19)
+    at updateFunctionComponent (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:12122:19)
+    at beginWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:13096:13)
+    at beginWork$1 (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15982:12)
+    at performUnitOfWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15568:12)
+    at workLoopSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15517:36)
+    at renderRootSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15500:6)
+    at performSyncWorkOnRoot (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15299:21)
+    at flushSyncCallbacks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:7802:19)
+[2026-07-11T07:40:32.306Z] [error] Error handled by React Router default ErrorBoundary: ReferenceError: ExternalLink is not defined
+    at ManuscriptPane (http://localhost:5199/src/components/review/ManuscriptPane.tsx?t=1783755632178:177:43)
+    at renderWithHooks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:9632:19)
+    at updateFunctionComponent (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:12122:19)
+    at beginWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:13096:13)
+    at beginWork$1 (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15982:12)
+    at performUnitOfWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15568:12)
+    at workLoopSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15517:36)
+    at renderRootSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15500:6)
+    at performSyncWorkOnRoot (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15299:21)
+    at flushSyncCallbacks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:7802:19)
+[2026-07-11T07:40:32.309Z] [error] Error handled by React Router default ErrorBoundary: ReferenceError: ExternalLink is not defined
+    at ManuscriptPane (http://localhost:5199/src/components/review/ManuscriptPane.tsx?t=1783755632178:177:43)
+    at renderWithHooks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:9632:19)
+    at updateFunctionComponent (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:12122:19)
+    at beginWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:13096:13)
+    at beginWork$1 (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15982:12)
+    at performUnitOfWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15568:12)
+    at workLoopSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15517:36)
+    at renderRootSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15500:6)
+    at recoverFromConcurrentError (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15193:21)
+    at performSyncWorkOnRoot (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15304:19)
+[2026-07-11T07:40:32.309Z] [error] Error handled by React Router default ErrorBoundary: ReferenceError: ExternalLink is not defined
+    at ManuscriptPane (http://localhost:5199/src/components/review/ManuscriptPane.tsx?t=1783755632178:177:43)
+    at renderWithHooks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:9632:19)
+    at updateFunctionComponent (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:12122:19)
+    at beginWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:13096:13)
+    at beginWork$1 (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15982:12)
+    at performUnitOfWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15568:12)
+    at workLoopSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15517:36)
+    at renderRootSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15500:6)
+    at recoverFromConcurrentError (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15193:21)
+    at performSyncWorkOnRoot (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15304:19)
+[2026-07-11T07:40:32.325Z] [error] The above error occurred in the <ManuscriptPane> component:
+
+    at ManuscriptPane (http://localhost:5199/src/components/review/ManuscriptPane.tsx?t=1783755632178:70:34)
+    at div
+    at LoopView (http://localhost:5199/src/app/routes/ReviewLoopPage.tsx?t=1783755355497:362:21)
+    at ReviewLoopPage (http://localhost:5199/src/app/routes/ReviewLoopPage.tsx?t=1783755355497:22:22)
+    at RenderedRoute (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4142:26)
+    at Outlet (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4769:25)
+    at div
+    at main
+    at div
+    at AppShell (http://localhost:5199/src/app/layout/AppShell.tsx?t=1783755455910:14:52)
+    at RenderedRoute (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4142:26)
+    at RenderErrorBoundary (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4076:3)
+    at DataRoutes2 (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4709:24)
+    at Router (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4774:29)
+    at RouterProvider (http://localhost:5199/node_modules/.vite/deps/react-router-dom.js?v=24772612:4519:27)
+    at RouterProvider2
+    at ThemeProvider (http://localhost:5199/src/app/providers/ThemeProvider.tsx:8:33)
+    at QueryClientProvider (http://localhost:5199/node_modules/.vite/deps/@tanstack_react-query.js?v=22d1cecb:2553:30)
+    at RecoilRoot_INTERNAL (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:2764:32)
+    at RecoilRoot (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:2840:10)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary.
+[2026-07-11T07:40:32.325Z] [error] React Router caught the following error during render ReferenceError: ExternalLink is not defined
+    at ManuscriptPane (http://localhost:5199/src/components/review/ManuscriptPane.tsx?t=1783755632178:177:43)
+    at renderWithHooks (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:9632:19)
+    at updateFunctionComponent (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:12122:19)
+    at beginWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:13096:13)
+    at beginWork$1 (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15982:12)
+    at performUnitOfWork (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15568:12)
+    at workLoopSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15517:36)
+    at renderRootSync (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15500:6)
+    at recoverFromConcurrentError (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15193:21)
+    at performSyncWorkOnRoot (http://localhost:5199/node_modules/.vite/deps/react-dom-DZQ9hRBr.js?v=8a630107:15304:19)
+[2026-07-11T07:40:33.474Z] [debug] [vite] hot updated: /src/components/review/ManuscriptPane.tsx
+[2026-07-11T07:40:33.474Z] [debug] [vite] hot updated: /src/index.css
+[2026-07-11T07:40:51.020Z] [debug] [vite] connecting...
+[2026-07-11T07:40:51.026Z] [debug] [vite] connected.
+[2026-07-11T07:40:51.041Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T07:50:59.308Z] [error] [vite] ReferenceError: manuscriptText is not defined
+    at http://localhost:5199/src/api/reviewLoop.ts?t=1783756259134:263:27
+    at Array.map (<anonymous>)
+    at makeVersion (http://localhost:5199/src/api/reviewLoop.ts?t=1783756259134:261:41)
+    at http://localhost:5199/src/api/reviewLoop.ts?t=1783756259134:322:10
+    at Array.map (<anonymous>)
+    at seedDemo (http://localhost:5199/src/api/reviewLoop.ts?t=1783756259134:320:4)
+    at http://localhost:5199/src/api/reviewLoop.ts?t=1783756259134:327:3
+[2026-07-11T07:50:59.316Z] [error] [vite] Failed to reload /src/components/sidebar/StatusPills.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2026-07-11T07:50:59.317Z] [error] [vite] ReferenceError: manuscriptText is not defined
+    at http://localhost:5199/src/api/reviewLoop.ts?t=1783756259134:263:27
+    at Array.map (<anonymous>)
+    at makeVersion (http://localhost:5199/src/api/reviewLoop.ts?t=1783756259134:261:41)
+    at http://localhost:5199/src/api/reviewLoop.ts?t=1783756259134:322:10
+    at Array.map (<anonymous>)
+    at seedDemo (http://localhost:5199/src/api/reviewLoop.ts?t=1783756259134:320:4)
+    at http://localhost:5199/src/api/reviewLoop.ts?t=1783756259134:327:3
+[2026-07-11T07:50:59.317Z] [error] [vite] Failed to reload /src/components/sidebar/Sidebar.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2026-07-11T07:50:59.317Z] [error] [vite] ReferenceError: manuscriptText is not defined
+    at http://localhost:5199/src/api/reviewLoop.ts?t=1783756259134:263:27
+    at Array.map (<anonymous>)
+    at makeVersion (http://localhost:5199/src/api/reviewLoop.ts?t=1783756259134:261:41)
+    at http://localhost:5199/src/api/reviewLoop.ts?t=1783756259134:322:10
+    at Array.map (<anonymous>)
+    at seedDemo (http://localhost:5199/src/api/reviewLoop.ts?t=1783756259134:320:4)
+    at http://localhost:5199/src/api/reviewLoop.ts?t=1783756259134:327:3
+[2026-07-11T07:50:59.317Z] [error] [vite] Failed to reload /src/app/routes/ReviewLoopPage.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2026-07-11T07:50:59.317Z] [debug] [vite] hot updated: /src/index.css
+[2026-07-11T07:50:59.317Z] [debug] [vite] hot updated: /src/app/routes/ReviewLoopPage.tsx
+[2026-07-11T07:50:59.317Z] [debug] [vite] hot updated: /src/components/sidebar/Sidebar.tsx
+[2026-07-11T07:50:59.317Z] [debug] [vite] hot updated: /src/components/sidebar/StatusPills.tsx
+[2026-07-11T07:52:09.229Z] [debug] [vite] hot updated: /src/index.css
+[2026-07-11T07:52:09.229Z] [debug] [vite] hot updated: /src/app/routes/ReviewLoopPage.tsx
+[2026-07-11T07:52:09.232Z] [debug] [vite] hot updated: /src/components/sidebar/Sidebar.tsx
+[2026-07-11T07:52:09.232Z] [debug] [vite] hot updated: /src/components/sidebar/StatusPills.tsx
+[2026-07-11T07:52:24.499Z] [error] Expectation Violation: Duplicate atom key "ui/theme". This is a FATAL ERROR in
+      production. But it is safe to ignore this warning if it occurred because of
+      hot module replacement.
+    at expectationViolation (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:433:17)
+    at checkForDuplicateAtomKey (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:473:34)
+    at registerNode (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:477:67)
+    at baseAtom (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:4950:15)
+    at atom (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:4977:14)
+    at http://localhost:5199/src/lib/store.ts?t=1783756344458:33:27
+[2026-07-11T07:52:24.499Z] [error] Expectation Violation: Duplicate atom key "ui/sidebarCollapsed". This is a FATAL ERROR in
+      production. But it is safe to ignore this warning if it occurred because of
+      hot module replacement.
+    at expectationViolation (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:433:17)
+    at checkForDuplicateAtomKey (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:473:34)
+    at registerNode (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:477:67)
+    at baseAtom (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:4950:15)
+    at atom (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:4977:14)
+    at http://localhost:5199/src/lib/store.ts?t=1783756344458:38:38
+[2026-07-11T07:52:24.499Z] [error] Expectation Violation: Duplicate atom key "ui/sidebarWidth". This is a FATAL ERROR in
+      production. But it is safe to ignore this warning if it occurred because of
+      hot module replacement.
+    at expectationViolation (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:433:17)
+    at checkForDuplicateAtomKey (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:473:34)
+    at registerNode (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:477:67)
+    at baseAtom (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:4950:15)
+    at atom (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:4977:14)
+    at http://localhost:5199/src/lib/store.ts?t=1783756344458:43:34
+[2026-07-11T07:52:24.499Z] [error] Expectation Violation: Duplicate atom key "ui/inspectorOpen". This is a FATAL ERROR in
+      production. But it is safe to ignore this warning if it occurred because of
+      hot module replacement.
+    at expectationViolation (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:433:17)
+    at checkForDuplicateAtomKey (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:473:34)
+    at registerNode (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:477:67)
+    at baseAtom (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:4950:15)
+    at atom (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:4977:14)
+    at http://localhost:5199/src/lib/store.ts?t=1783756344458:52:35
+[2026-07-11T07:52:24.499Z] [error] Expectation Violation: Duplicate atom key "ui/inspectorWidth". This is a FATAL ERROR in
+      production. But it is safe to ignore this warning if it occurred because of
+      hot module replacement.
+    at expectationViolation (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:433:17)
+    at checkForDuplicateAtomKey (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:473:34)
+    at registerNode (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:477:67)
+    at baseAtom (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:4950:15)
+    at atom (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:4977:14)
+    at http://localhost:5199/src/lib/store.ts?t=1783756344458:56:36
+[2026-07-11T07:52:24.499Z] [error] Expectation Violation: Duplicate atom key "ui/inspectorMaximized". This is a FATAL ERROR in
+      production. But it is safe to ignore this warning if it occurred because of
+      hot module replacement.
+    at expectationViolation (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:433:17)
+    at checkForDuplicateAtomKey (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:473:34)
+    at registerNode (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:477:67)
+    at baseAtom (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:4950:15)
+    at atom (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:4977:14)
+    at http://localhost:5199/src/lib/store.ts?t=1783756344458:65:40
+[2026-07-11T07:52:24.499Z] [error] Expectation Violation: Duplicate atom key "ui/isFullscreen". This is a FATAL ERROR in
+      production. But it is safe to ignore this warning if it occurred because of
+      hot module replacement.
+    at expectationViolation (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:433:17)
+    at checkForDuplicateAtomKey (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:473:34)
+    at registerNode (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:477:67)
+    at baseAtom (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:4950:15)
+    at atom (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:4977:14)
+    at http://localhost:5199/src/lib/store.ts?t=1783756344458:69:34
+[2026-07-11T07:52:24.499Z] [error] Expectation Violation: Duplicate atom key "ui/paletteOpen". This is a FATAL ERROR in
+      production. But it is safe to ignore this warning if it occurred because of
+      hot module replacement.
+    at expectationViolation (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:433:17)
+    at checkForDuplicateAtomKey (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:473:34)
+    at registerNode (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:477:67)
+    at baseAtom (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:4950:15)
+    at atom (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:4977:14)
+    at http://localhost:5199/src/lib/store.ts?t=1783756344458:73:33
+[2026-07-11T07:52:24.500Z] [error] Expectation Violation: Duplicate atom key "ui/composerDraft". This is a FATAL ERROR in
+      production. But it is safe to ignore this warning if it occurred because of
+      hot module replacement.
+    at expectationViolation (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:433:17)
+    at checkForDuplicateAtomKey (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:473:34)
+    at registerNode (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:477:67)
+    at baseAtom (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:4950:15)
+    at atom (http://localhost:5199/node_modules/.vite/deps/recoil.js?v=959cf594:4977:14)
+    at http://localhost:5199/src/lib/store.ts?t=1783756344458:79:35
+[2026-07-11T07:52:24.545Z] [debug] [vite] hot updated: /src/app/providers/ThemeProvider.tsx
+[2026-07-11T07:52:24.545Z] [debug] [vite] hot updated: /src/app/routes/SettingsPage.tsx
+[2026-07-11T07:52:24.545Z] [debug] [vite] hot updated: /src/app/layout/AppShell.tsx
+[2026-07-11T07:52:24.545Z] [debug] [vite] hot updated: /src/components/sidebar/Sidebar.tsx
+[2026-07-11T07:52:24.545Z] [debug] [vite] hot updated: /src/app/routes/ReviewLoopPage.tsx
+[2026-07-11T07:52:24.545Z] [debug] [vite] hot updated: /src/components/review/ManuscriptPane.tsx
+[2026-07-11T07:52:24.545Z] [debug] [vite] hot updated: /src/index.css
+[2026-07-11T07:55:04.373Z] [debug] [vite] hot updated: /src/app/routes/ReviewLoopPage.tsx
+[2026-07-11T07:55:04.373Z] [debug] [vite] hot updated: /src/index.css
+[2026-07-11T07:55:05.413Z] [error] Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+[2026-07-11T07:55:05.415Z] [error] [vite] Failed to reload /src/app/routes/ReviewLoopPage.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2026-07-11T07:55:05.415Z] [debug] [vite] hot updated: /src/app/routes/ReviewLoopPage.tsx
+[2026-07-11T07:55:05.415Z] [debug] [vite] hot updated: /src/index.css
+[2026-07-11T07:55:13.419Z] [debug] [vite] connecting...
+[2026-07-11T07:55:13.426Z] [debug] [vite] connected.
+[2026-07-11T07:55:13.432Z] [error] Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+[2026-07-11T07:55:14.375Z] [debug] [vite] connecting...
+[2026-07-11T07:55:14.387Z] [debug] [vite] connected.
+[2026-07-11T07:55:14.410Z] [error] Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+[2026-07-11T07:55:14.452Z] [debug] [vite] connecting...
+[2026-07-11T07:55:14.457Z] [debug] [vite] connected.
+[2026-07-11T07:55:14.467Z] [error] Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+[2026-07-11T07:55:23.382Z] [debug] [vite] connecting...
+[2026-07-11T07:55:23.385Z] [debug] [vite] connected.
+[2026-07-11T07:55:23.386Z] [error] Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+[2026-07-11T07:55:41.285Z] [debug] [vite] connecting...
+[2026-07-11T07:55:41.287Z] [debug] [vite] connected.
+[2026-07-11T07:55:41.303Z] [error] Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+[2026-07-11T07:55:50.578Z] [debug] [vite] connecting...
+[2026-07-11T07:55:50.614Z] [debug] [vite] connected.
+[2026-07-11T07:55:50.620Z] [error] Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+[2026-07-11T07:56:09.834Z] [debug] [vite] connecting...
+[2026-07-11T07:56:09.856Z] [debug] [vite] connected.
+[2026-07-11T07:56:09.858Z] [error] Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+[2026-07-11T07:56:18.400Z] [debug] [vite] connecting...
+[2026-07-11T07:56:18.486Z] [debug] [vite] connected.
+[2026-07-11T07:56:18.507Z] [error] Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+[2026-07-11T07:58:23.645Z] [debug] [vite] connecting...
+[2026-07-11T07:58:23.647Z] [debug] [vite] connected.
+[2026-07-11T07:58:23.690Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T08:00:05.703Z] [debug] [vite] connecting...
+[2026-07-11T08:00:05.708Z] [debug] [vite] connected.
+[2026-07-11T08:00:05.737Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T08:00:06.741Z] [debug] [vite] connecting...
+[2026-07-11T08:00:06.741Z] [debug] [vite] connected.
+[2026-07-11T08:00:06.791Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T08:01:34.422Z] [debug] [vite] connecting...
+[2026-07-11T08:01:34.427Z] [debug] [vite] connected.
+[2026-07-11T08:01:34.438Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T08:01:48.428Z] [debug] [vite] connecting...
+[2026-07-11T08:01:48.480Z] [debug] [vite] connected.
+[2026-07-11T08:01:48.486Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T08:02:34.315Z] [debug] [vite] hot updated: /src/components/analysis/CorpusDistribution.tsx
+[2026-07-11T08:02:34.315Z] [debug] [vite] hot updated: /src/index.css
+[2026-07-11T08:02:43.396Z] [debug] [vite] connecting...
+[2026-07-11T08:02:43.400Z] [debug] [vite] connected.
+[2026-07-11T08:02:43.410Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T08:06:50.273Z] [debug] [vite] connecting...
+[2026-07-11T08:06:50.276Z] [debug] [vite] connected.
+[2026-07-11T08:06:50.292Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T08:08:20.489Z] [debug] [vite] connecting...
+[2026-07-11T08:08:20.490Z] [debug] [vite] connected.
+[2026-07-11T08:08:20.503Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T08:08:57.586Z] [debug] [vite] hot updated: /src/index.css
+[2026-07-11T08:09:17.115Z] [debug] [vite] connecting...
+[2026-07-11T08:09:17.118Z] [debug] [vite] connected.
+[2026-07-11T08:09:17.129Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T08:09:38.108Z] [error] WebSocket connection to 'ws://localhost:5199/?token=ufF0uVtoH0Hs' failed: 
+[2026-07-11T08:09:38.109Z] [log] [vite] server connection lost. Polling for restart...
+[2026-07-11T08:09:40.497Z] [debug] [vite] connecting...
+[2026-07-11T08:09:40.574Z] [debug] [vite] connected.
+[2026-07-11T08:09:40.610Z] [debug] [vite] connecting...
+[2026-07-11T08:09:40.613Z] [debug] [vite] connected.
+[2026-07-11T08:09:40.625Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T08:32:00.709Z] [debug] [vite] hot updated: /src/app/routes/ReviewLoopPage.tsx
+[2026-07-11T08:32:00.709Z] [debug] [vite] hot updated: /src/index.css
+[2026-07-11T08:33:14.845Z] [debug] [vite] hot updated: /src/components/sidebar/Sidebar.tsx
+[2026-07-11T08:33:14.845Z] [debug] [vite] hot updated: /src/index.css
+[2026-07-11T08:33:15.323Z] [debug] [vite] connecting...
+[2026-07-11T08:33:15.326Z] [debug] [vite] connected.
+[2026-07-11T08:33:15.343Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T08:33:36.302Z] [debug] [vite] connecting...
+[2026-07-11T08:33:36.303Z] [debug] [vite] connected.
+[2026-07-11T08:33:36.305Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T08:34:26.154Z] [debug] [vite] hot updated: /src/components/sidebar/Sidebar.tsx
+[2026-07-11T08:34:26.154Z] [debug] [vite] hot updated: /src/index.css
+[2026-07-11T08:34:42.026Z] [debug] [vite] connecting...
+[2026-07-11T08:34:42.029Z] [debug] [vite] connected.
+[2026-07-11T08:34:42.033Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T08:51:03.282Z] [debug] [vite] hot updated: /src/app/routes/ReviewLoopPage.tsx
+[2026-07-11T08:51:03.282Z] [debug] [vite] hot updated: /src/app/routes/AnalysisPage.tsx
+[2026-07-11T08:51:03.282Z] [debug] [vite] hot updated: /src/components/sidebar/Sidebar.tsx
+[2026-07-11T08:51:03.282Z] [debug] [vite] hot updated: /src/components/sidebar/StatusPills.tsx
+[2026-07-11T08:51:03.282Z] [debug] [vite] hot updated: /src/index.css
+[2026-07-11T08:51:30.708Z] [debug] [vite] connecting...
+[2026-07-11T08:51:30.716Z] [debug] [vite] connected.
+[2026-07-11T08:51:30.741Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+[2026-07-11T08:51:36.488Z] [debug] [vite] connecting...
+[2026-07-11T08:51:36.490Z] [debug] [vite] connected.
+[2026-07-11T08:51:36.494Z] [info] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
