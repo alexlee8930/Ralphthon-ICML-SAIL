@@ -772,15 +772,41 @@ function ReviewsBlock({ cycle }: { cycle: LoopCycle }) {
       </div>
       <div className="mt-2 grid gap-2.5 sm:grid-cols-3">
         {cycle.reviews.map((r) => (
-          <div key={r.id} className="rounded-card border border-border bg-surface p-3 shadow-card">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-text">{r.reviewer}</span>
-              <span className="font-mono text-xs text-muted">{r.rating}/10</span>
-            </div>
-            <p className="mt-1.5 text-xs leading-relaxed text-muted">{r.summary}</p>
-          </div>
+          <ReviewCard key={r.id} review={r} />
         ))}
       </div>
+    </div>
+  );
+}
+
+function ReviewCard({ review }: { review: LoopCycle["reviews"][number] }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div
+      className={cn(
+        "rounded-card border border-border bg-surface p-3 shadow-card",
+        expanded && "sm:col-span-3",
+      )}
+    >
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium text-text">{review.reviewer}</span>
+        <span className="font-mono text-xs text-muted">{review.rating}/10</span>
+      </div>
+      {expanded && review.body ? (
+        <p className="mt-1.5 whitespace-pre-wrap text-xs leading-relaxed text-text">
+          {review.body}
+        </p>
+      ) : (
+        <p className="mt-1.5 text-xs leading-relaxed text-muted">{review.summary}</p>
+      )}
+      {review.body && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="mt-2 text-[11px] text-accent hover:underline"
+        >
+          {expanded ? "Show summary" : "Read full review"}
+        </button>
+      )}
     </div>
   );
 }

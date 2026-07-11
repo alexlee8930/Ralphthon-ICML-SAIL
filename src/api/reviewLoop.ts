@@ -24,6 +24,9 @@ export interface ReviewerReview {
   reviewer: string;
   rating: number;
   summary: string;
+  /** Full ICML-length review body — the server's expansion of the head's
+   *  concise judgment (grounded reasoning, [Summary]/[S&W]/[Questions]). */
+  body?: string;
 }
 
 export type CommentSeverity = "major" | "minor" | "question";
