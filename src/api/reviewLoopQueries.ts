@@ -60,6 +60,10 @@ export function useEditManuscript(id: string) {
   );
 }
 
+export function useDiscardDraft(id: string) {
+  return usePaperMutation((_: void) => loopApi.discardDraft(id));
+}
+
 /** Poll a running agent job (~0.7s) so its event stream renders live. */
 export function useAgentJob(jobId: string | null) {
   return useQuery({

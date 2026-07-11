@@ -25,6 +25,7 @@ import {
   loopKeys,
   useAgentJob,
   useDeleteLoopPaper,
+  useDiscardDraft,
   useLoopPaper,
   useLoopPapers,
   useRevisionApply,
@@ -353,6 +354,7 @@ function LoopView({ paperId }: { paperId: string }) {
   const paper = useLoopPaper(paperId);
   const qc = useQueryClient();
   const revisionApply = useRevisionApply(paperId);
+  const discardDraft = useDiscardDraft(paperId);
 
   // Long agent ops run as jobs; the card below streams their progress.
   const [activeJob, setActiveJob] = useState<{ op: AgentOp; id: string } | null>(null);
@@ -464,7 +466,16 @@ function LoopView({ paperId }: { paperId: string }) {
                 cycle={shown}
                 readOnly={!inDiscussion || !!shown.draftManuscript}
                 pending={revisionApply.isPending}
-                onApply={(decisions) => revisionApply.mutate(decisions)}
+                onApply={(decisions) =>
+                  revisionApply.mutate(decisions, {
+                    onSuccess: (paper) => {
+                      // The allow/deny log becomes draft rebuttal text —
+                      // editable in the composer, sent when the author is ready.
+                      const note = paper.cycles[paper.cycles.length - 1]?.revisionNote;
+                      if (note) composerTextBridge?.(note);
+                    },
+                  })
+                }
               />
             )}
             {activeJob && isCurrent && <AgentWorkingCard job={job.data} op={activeJob.op} />}
@@ -511,6 +522,8 @@ function LoopView({ paperId }: { paperId: string }) {
             replyPending={activeJob?.op === "reply"}
             draftPending={activeJob?.op === "revision-draft"}
             finalizePending={activeJob?.op === "finalize"}
+            hasRevisedDraft={!!shown.draftManuscript}
+            onDiscardDraft={() => discardDraft.mutate()}
             onSend={(text, replyTo) => startOp("reply", { text, replyTo })}
             onDraft={() => startOp("revision-draft")}
             onFinalize={() => startOp("finalize")}
@@ -531,12 +544,16 @@ function LoopView({ paperId }: { paperId: string }) {
 /** Comment "Reply" buttons live outside the composer; a tiny bridge hands the
  *  target down without lifting composer state through the whole page. */
 let composerBridge: ((t: { id: string; label: string }) => void) | null = null;
+/** Pre-fill the composer (e.g. the hunk allow/deny log as draft rebuttal). */
+let composerTextBridge: ((text: string) => void) | null = null;
 
 function Composer({
   busy,
   replyPending,
   draftPending,
   finalizePending,
+  hasRevisedDraft,
+  onDiscardDraft,
   onSend,
   onDraft,
   onFinalize,
@@ -545,6 +562,8 @@ function Composer({
   replyPending: boolean;
   draftPending: boolean;
   finalizePending: boolean;
+  hasRevisedDraft: boolean;
+  onDiscardDraft: () => void;
   onSend: (text: string, replyTo?: string) => void;
   onDraft: () => void;
   onFinalize: () => void;
@@ -554,8 +573,10 @@ function Composer({
 
   useEffect(() => {
     composerBridge = setReplyTo;
+    composerTextBridge = setText;
     return () => {
       composerBridge = null;
+      composerTextBridge = null;
     };
   }, []);
 
@@ -586,6 +607,22 @@ function Composer({
               <button
                 onClick={() => setReplyTo(null)}
                 aria-label="Cancel reply"
+                className="rounded p-0.5 hover:bg-surface-2 hover:text-text"
+              >
+                <X size={11} />
+              </button>
+            </div>
+          )}
+          {hasRevisedDraft && (
+            <div className="flex items-center gap-1.5 px-4 pt-3 text-[11px] text-muted">
+              <CornerDownRight size={12} />
+              <span>
+                <span className="text-text">Revised draft</span> attached to your next message
+              </span>
+              <button
+                onClick={onDiscardDraft}
+                aria-label="Discard the revised draft"
+                title="Discard the revised draft"
                 className="rounded p-0.5 hover:bg-surface-2 hover:text-text"
               >
                 <X size={11} />
@@ -832,6 +869,12 @@ function ThreadMessage({ msg, cycle }: { msg: CycleMessage; cycle: LoopCycle }) 
           <div className="mt-1 rounded border-l-2 border-border bg-surface-2/60 px-2 py-1 text-[11px] text-muted">
             ↪ {refComment.reviewer} · {refComment.section}: {refComment.body.slice(0, 110)}
             {refComment.body.length > 110 ? "…" : ""}
+          </div>
+        )}
+        {msg.attachment === "revised-draft" && (
+          <div className="mt-1 flex items-center gap-1 rounded border-l-2 border-ok/50 bg-ok/5 px-2 py-1 text-[11px] text-muted">
+            <FileText size={11} />
+            <span>Revised manuscript attached</span>
           </div>
         )}
         <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-text">{msg.body}</p>

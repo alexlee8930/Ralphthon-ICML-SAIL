@@ -47,6 +47,8 @@ export interface CycleMessage {
   body: string;
   /** A ReviewComment id (per-comment reply) or a CycleMessage id. */
   replyTo?: string;
+  /** Set when the pending revised draft was delivered with this message. */
+  attachment?: "revised-draft";
   createdAt: string;
 }
 
@@ -87,8 +89,11 @@ export interface LoopCycle {
   thread: CycleMessage[];
   /** AI revision draft awaiting per-hunk decisions. */
   pendingRevision?: { hunks: RevisionHunk[]; createdAt: string };
-  /** Manuscript text after applying allowed hunks — carried into the next cycle. */
+  /** Revised manuscript (applied hunks or manual edits) — rides as an
+   *  attachment on the author's next message and seeds the next cycle. */
   draftManuscript?: string;
+  /** The hunk allow/deny log — pre-fills the composer as draft rebuttal text. */
+  revisionNote?: string;
   /** Set at finalize — the AC synthesis of reviews + discussion. */
   metaReview?: string;
   /** Set at finalize — score exists only alongside the meta-review. */
@@ -329,7 +334,8 @@ Across seven knowledge-intensive benchmarks, the curriculum-distilled 1.3B stude
   c1.pendingRevision = { hunks: mockHunks(c1).map((h, i) => ({ ...h, decision: i === 0 ? "allowed" : "denied" })), createdAt: now() };
   const applied = c1.pendingRevision.hunks[0];
   c1.draftManuscript = (c1.manuscript.text ?? "").replace(applied.before, applied.after);
-  pushMsg(c1, "author", "Author", `We revised the manuscript as follows: (1) ${applied.rationale} We considered but did not adopt: (1) ${c1.pendingRevision.hunks[1]?.rationale ?? ""}`);
+  const revMsg = pushMsg(c1, "author", "Author", `We revised the manuscript as follows: (1) ${applied.rationale} We considered but did not adopt: (1) ${c1.pendingRevision.hunks[1]?.rationale ?? ""}`);
+  revMsg.attachment = "revised-draft";
   mockFinalize(c1);
   const c2 = buildCycle(p.id, 2, { kind: "text", text: c1.draftManuscript });
   c2.reviews = c2.reviews.map((r) => ({ ...r, rating: r.rating + 3 }));
@@ -482,6 +488,7 @@ export const loopApi = {
     await delay(900);
     const cyc = current(p);
     const authorMsg = pushMsg(cyc, "author", "Author", input.text, input.replyTo);
+    if (cyc.draftManuscript) authorMsg.attachment = "revised-draft";
     const target = cyc.comments.find((c) => c.id === input.replyTo);
     const responders = target
       ? cyc.reviews.filter((r) => r.reviewer === target.reviewer)
@@ -534,7 +541,8 @@ export const loopApi = {
     const parts: string[] = [];
     if (applied.length) parts.push(`We revised the manuscript as follows: ${applied.map((h, i) => `(${i + 1}) ${h.rationale}`).join(" ")}`);
     if (declined.length) parts.push(`We considered but did not adopt: ${declined.map((h, i) => `(${i + 1}) ${h.rationale}`).join(" ")}`);
-    pushMsg(cyc, "author", "Author", parts.join(" ") || "We reviewed the proposed revision and made no changes.");
+    // Pre-fills the composer instead of posting a ghost message.
+    cyc.revisionNote = parts.join(" ") || "We reviewed the proposed revision and made no changes.";
     persist(p);
     return structuredClone(p);
   },
@@ -619,14 +627,24 @@ export const loopApi = {
     return { ...j, events: [...j.events] };
   },
 
-  /** The author edits the manuscript directly; logged into the thread. */
+  /** The author edits the manuscript directly — the draft rides as a chip
+   *  until the next message delivers it to the reviewers. */
   async editManuscript(id: string, text: string, note?: string): Promise<LoopPaper> {
     if (BASE) return jsonPost(`/api/loop/papers/${id}/manuscript`, { text, note });
     const p = await mockPaper(id);
     if (p.status === "decided") throw new Error("cycle already decided — resubmit to continue");
+    current(p).draftManuscript = text;
+    persist(p);
+    return structuredClone(p);
+  },
+
+  /** Discard the pending revised draft (the chip's ✕). */
+  async discardDraft(id: string): Promise<LoopPaper> {
+    if (BASE) return http(`/api/loop/papers/${id}/draft`, { method: "DELETE" });
+    const p = await mockPaper(id);
     const cyc = current(p);
-    cyc.draftManuscript = text;
-    pushMsg(cyc, "author", "Author", note?.trim() || "We revised the manuscript directly in response to the reviews (manual edit).");
+    delete cyc.draftManuscript;
+    delete cyc.revisionNote;
     persist(p);
     return structuredClone(p);
   },
