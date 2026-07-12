@@ -4,3 +4,4 @@ dist
 .DS_Store
 .omc
 sail-spec/SECRETS.local.md
+sail-spec/vendor/
