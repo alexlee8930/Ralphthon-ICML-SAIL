@@ -26,11 +26,15 @@
 
 §1의 P3~P5는 **이미 준비되어 있다.** 새로 만들지 말고 아래 검증 경로를 그대로 쓸 것:
 
-- **P1 리뷰어 리젝 보강**: 데이터 `/data/sft_astage_v2` (볼륨에 존재 확인됨 — train 663MB
-  + val. 리젝 3,500쌍 + **프롬프트 연도 제거판**으로 D1·D3 동시 처방).
-  발사 커맨드·평가 체인·게이트는 `vendor/ac-competition-kit/BACKLOG.md` **P1 블록을
-  글자 그대로** (2×H100 `resourcespec-ch100x2`, ~4.5h, ~$21.5). 오늘 발사·정상 기동까지
-  확인됨(job-ea1ifj88vbdn — 운영자 지시로 세션 이관을 위해 terminate, 레시피 유효).
+- **P1 리뷰어 리젝 보강 (3시간 컷 구성)**: 데이터 `/data/sft_astage_v2` (볼륨에 존재
+  확인됨 — train 663MB + val. 리젝 3,500쌍 + **프롬프트 연도 제거판**으로 D1·D3 동시 처방).
+  발사는 `vendor/ac-competition-kit/BACKLOG.md` P1 커맨드에서 **리소스만 4×로 상향**:
+  `-r resourcespec-ch100x4` + `torchrun --nproc_per_node 4` (나머지 인자 동일) —
+  **~2.2h, $9.56/hr, 총 ~$22** (GPU-시간 동일, wall-clock 절반). 4×H100 DDP 구성은
+  같은 스크립트의 job(ddp4-smoke, 2026-07-12, 13분 succeeded)으로 검증됨.
+  타임라인: T+0 발사 → T+2:15 평가 체인(~35분) → **T+3:00 게이트 판정** = 3시간 컷.
+  크레딧 부족으로 직렬화가 필요할 때만 BACKLOG 원본(2×H100 ~4.5h)으로 강등 —
+  단 이 경우 3시간 컷을 초과함을 STATE에 명시.
   게이트: 판별 AUC ≥0.65 · ≤3점 비율 ≥10% · 하류 v2 판정 ≥0.79. **통과 시에만 서빙 반영.**
 - **P2 점수헤드 v21 리핏**: kit BACKLOG P2 — commands.sh 블록 3에서
   `--adapter /data/out/v21/final`로 변경, 1×H100 ~2.5h. 게이트 Spearman ≥0.85.
