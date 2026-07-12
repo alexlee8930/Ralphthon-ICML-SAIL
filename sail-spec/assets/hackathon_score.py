@@ -13,7 +13,7 @@
 순위는 clamp된 score가 아니라 연속값 pred(0-1, /score 직접 호출)로 매긴다 —
 비슷한 품질의 논문 10편 안에서는 pred가 해상도를 가진다 (sail-spec/95 §4).
 """
-import argparse, csv, json, sys, time, urllib.request
+import argparse, csv, json, sys, time, urllib.parse, urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -31,7 +31,6 @@ CONF = ("You are confident in your assessment, but not absolutely certain. It is
 
 def http(method, url, body=None, timeout=600, form=None):
     if form is not None:
-        import urllib.parse
         data = urllib.parse.urlencode(form).encode()
         req = urllib.request.Request(url, data=data, method=method)
     else:
