@@ -1,6 +1,6 @@
 # 53 · Analysis 화면
 
-의존: 31-queries, 32-corpus
+의존: 31-queries, 32-corpus, 51-review-loop-page(CycleRail) — 51과 상호 참조
 
 산출 파일:
 

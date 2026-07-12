@@ -24,7 +24,7 @@
 
 ---
 
-### 파일: `src/api/reviewLoop.ts` (709줄) — **verbatim, 글자 그대로 사용**
+### 파일: `src/api/reviewLoop.ts` (728줄) — **verbatim, 글자 그대로 사용**
 
 ````ts
 /**
@@ -56,6 +56,13 @@ export interface ReviewerReview {
   /** Full ICML-length review body — the server's expansion of the head's
    *  concise judgment (grounded reasoning, [Summary]/[S&W]/[Questions]). */
   body?: string;
+  /** Venue review-form facets — live backend only; the mock omits them and
+   *  the UI must tolerate their absence. */
+  confidence?: number;
+  soundness?: number;
+  presentation?: number;
+  contribution?: number;
+  strengths?: string[];
 }
 
 export type CommentSeverity = "major" | "minor" | "question";
@@ -137,6 +144,18 @@ export interface LoopCycle {
     headline: string;
     targetBand: string;
     items: Array<{ feature: string; why: string; action: string }>;
+  };
+  /** OpenReview-style Program Chairs post — live backend only (finalize). */
+  decisionPost?: { decision: string; comment: string; createdAt: string };
+  /** Corpus-measured recency-calibration audit — live backend only. */
+  fieldContext?: {
+    note: string;
+    term?: string;
+    maturity?: number;
+    early_pct?: number;
+    recent_pct?: number;
+    mature_terms?: string[];
+    rising_terms?: string[];
   };
 }
 

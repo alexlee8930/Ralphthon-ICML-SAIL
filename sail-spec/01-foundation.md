@@ -13,13 +13,15 @@
 - `postcss.config.js`
 - `index.html`
 - `.env.example`
+- `.gitignore`
 - `public/favicon.svg`
 - `public/icons.svg`
 
 ---
 
-Vite + React 19 + TypeScript + Tailwind 3 SPA의 토대. 이 단위가 끝나면
-`npm install` 이 한 번에 성공하고 `npx tsc -b` 가 빈 프로젝트로 통과해야 한다.
+Vite + React 18 + TypeScript + Tailwind 3 SPA의 토대. 이 단위가 끝나면
+`npm install` 이 한 번에 성공해야 한다. (`npx tsc -b`는 src가 비어 있으면
+TS18003으로 실패하는 게 정상 — src 첫 파일이 생기는 design/10 이후부터 게이트.)
 
 핵심 규칙:
 - **의존성은 package.json 그대로** — 새 패키지 추가/버전 변경 금지. 폰트는
@@ -27,7 +29,11 @@ Vite + React 19 + TypeScript + Tailwind 3 SPA의 토대. 이 단위가 끝나면
 - 경로 별칭 `@/*` = `src/*` (vite.config.ts + tsconfig.app.json 두 곳 모두 정의).
 - `.env.example`의 `VITE_RALPH_API_URL` 이 백엔드 스위치다: 비우면 mock 모드,
   URL을 주면 라이브 API 모드 (contracts/20 참조).
-- `public/` 의 두 SVG는 파비콘·스프라이트로 index.html에서 참조된다.
+- `public/favicon.svg`는 index.html이 참조. `icons.svg`는 현재 미참조 자산 — 그대로 배치만 한다.
+- 요구 런타임: **Node ≥ 20** (Vite/TS 빌드), 백엔드는 **Python ≥ 3.10**.
+- `.gitignore`가 없으면 `npx oxlint`가 node_modules까지 스캔한다 — 반드시 포함.
+- 레지스트리 스냅샷 고정이 필요하면 `sail-spec/assets/package-lock.json`을
+  루트에 복사 후 `npm ci` (선택 — npm install로도 검증 완료).
 
 
 ---
@@ -257,6 +263,17 @@ export default {
 ````bash
 # Ralph agent API base URL. Leave unset to run on the built-in mock adapter.
 # VITE_RALPH_API_URL=http://localhost:8100
+````
+
+### 파일: `.gitignore` (6줄) — **verbatim, 글자 그대로 사용**
+
+````text
+node_modules
+dist
+.env.local
+.DS_Store
+.omc
+sail-spec/SECRETS.local.md
 ````
 
 ### 파일: `public/favicon.svg` (1줄) — **verbatim, 글자 그대로 사용**

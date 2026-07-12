@@ -1,6 +1,6 @@
 # 51 · 리뷰 루프 화면 (제출 + 채팅 스레드)
 
-의존: 31-queries, 52-manuscript-pane, 55-primitives
+의존: 31-queries, 52-manuscript-pane, 53-analysis(ReviewTabs), 55-primitives — 53과 상호 참조이므로 같은 에이전트가 51·52·53·54를 함께 구현할 것
 
 산출 파일:
 

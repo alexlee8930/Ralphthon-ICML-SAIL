@@ -10,7 +10,7 @@
 
 ---
 
-공용 프리미티브. ConfirmDialog는 radix dialog 기반(삭제 확인),
+공용 프리미티브. ConfirmDialog는 순수 div 오버레이 구현(삭제 확인 — radix 미사용),
 Toaster는 lib/toast 버스 소비.
 
 

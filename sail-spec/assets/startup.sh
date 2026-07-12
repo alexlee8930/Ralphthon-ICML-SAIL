@@ -5,7 +5,8 @@ set -e
 mkdir -p /opt/sail
 TOKEN=$(curl -s -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token" | python3 -c "import sys,json;print(json.load(sys.stdin)['access_token'])")
 gcs() { curl -sf -H "Authorization: Bearer $TOKEN" "https://storage.googleapis.com/storage/v1/b/${SAIL_BUCKET:-sweetspot-ax-sail-adapter}/o/$1?alt=media" -o "$2"; }
-attr() { curl -s -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/$1"; }
+attr() { curl -sf -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/$1" || true; }
+VMODEL=$(attr sail-vessl-model); VMODEL=${VMODEL:-v2}   # 어댑터 스왑 스위치 (training/85 §2)
 gcs sail_adapter.py /opt/sail/sail_adapter.py
 gcs web.tar.gz /tmp/web.tar.gz
 gcs topic_maturity.json /opt/sail/topic_maturity.json || true  # 없으면 리센시 보정만 비활성(무해)
@@ -28,6 +29,7 @@ Environment=PORT=8100
 Environment=TOPIC_MATURITY_PATH=/opt/sail/topic_maturity.json
 Environment=ANTHROPIC_API_KEY=$(attr sail-anthropic-key)
 Environment=VESSL_META_URL=$(attr sail-vessl-url)
+Environment=VESSL_META_MODEL=$VMODEL
 ExecStart=/opt/sail/venv/bin/python /opt/sail/sail_adapter.py
 Restart=always
 

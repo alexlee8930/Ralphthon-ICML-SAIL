@@ -12,8 +12,9 @@
 ---
 
 조립 단계. RecoilRoot + QueryClientProvider + ThemeProvider + RouterProvider.
-라우트: `/` → `/review` 리다이렉트, `/review`, `/review/:paperId`,
-`/analysis`, `/analysis/:paperId`, `/settings`, `*` NotFound.
+라우트(verbatim 라우터가 기준): `/` → `/review` 리다이렉트, `/review`,
+`/review/:paperId`, `/review/:paperId/analysis`, `/settings`, `*` NotFound.
+(`/analysis` 단독 라우트는 없다 — 분석은 항상 논문 컨텍스트 하위.)
 AppShell = Sidebar + Outlet + Toaster.
 
 

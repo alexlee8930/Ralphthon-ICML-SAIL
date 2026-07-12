@@ -1,6 +1,6 @@
 # 50 · 사이드바
 
-의존: 31-queries, 40-lib, design/10
+의존: 31-queries, 40-lib, 55-primitives(ConfirmDialog), design/10
 
 산출 파일:
 
@@ -10,7 +10,7 @@
 ---
 
 좌측 내비게이션. 세션(논문) 목록·최근 점수 배지·삭제(ConfirmDialog)·
-새 리뷰 시작·Analysis/Settings 링크·⌘B 접기·두 줄 브랜드 록업
+새 리뷰 시작·Settings 링크·⌘B 접기·두 줄 브랜드 록업
 ("ICML SAIL" / "with Ralph")·StatusPills(백엔드 Mock/API 상태).
 
 

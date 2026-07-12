@@ -46,9 +46,9 @@ gcloud compute firewall-rules create allow-sail-adapter-8100 \
   --allow tcp:8100 --source-ranges 0.0.0.0/0 --target-tags sail-adapter
 
 # ③ 아티팩트 선업로드 (VM이 부팅하며 당겨간다 — 반드시 VM 생성 전에)
-#    dist는 "3. 배포 루프"의 빌드 명령으로 먼저 만든다 (VM_IP를 모르는 최초에는
-#    일단 빈 URL로 빌드→생성→IP 확인→재빌드→재배포가 가장 단순하다)
-gcloud storage cp serve/sail_adapter.py sail-spec/assets/topic_maturity.json web.tar.gz \
+#    최초에는 VM_IP를 모르므로 일단 빈 URL로 빌드→생성→IP 확인→§3 재배포가 단순하다
+npm run build && tar -czf /tmp/web.tar.gz -C dist .
+gcloud storage cp serve/sail_adapter.py sail-spec/assets/topic_maturity.json /tmp/web.tar.gz \
   gs://sweetspot-ax-sail-adapter/
 
 # ④ VM 생성 — startup-script는 assets/startup.sh 그대로

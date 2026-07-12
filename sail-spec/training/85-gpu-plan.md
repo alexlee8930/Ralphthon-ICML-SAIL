@@ -6,6 +6,12 @@
 완주하고, 3시간이 지나도 **운영자가 중지할 때까지 체크포인트를 보존하며 계속 학습**
 (epoch마다 게이트 평가→통과 시 어댑터 자동 승격)한다.
 
+> **트랙 성격**: G1~G3(제품)과 달리 이 트랙은 verbatim 재현이 아니라 **실행 플랜**이다.
+> P3~P6·§3·§4의 스크립트(fetch_rejects / eval_gates / promote / fetch_lowtier / isotonic
+> fit)는 이 플랜을 스펙 삼아 학습 창 전에 작성하는 산출물이며, 완성되면 `/data/code/`에
+> 두고 이 문서에 경로를 역기입한다. VESSL 서빙측 `/data/serve/app.py`는 볼륨에 이미
+> 존재한다(ops/81 §4).
+
 ## 0. 반영해야 하는 발견 (전부 실측 근거 — ops/81 §2 참조)
 
 | # | 결함 | 실측 | 처방 |
@@ -38,7 +44,11 @@ T+0:10~ job logs 폴링 감시. loss 발산 시 즉시 재런치 (버퍼 ~40분 
 T+1:45  게이트 1 (JOB-A): 리젝 held-out mean rating ≤4.5 AND accept held-out ≥6
 T+2:00  게이트 2 (JOB-B): test_2023 balanced-acc ≥ v2 + D3/D4 진단 재실행(격차 축소 확인)
 T+2:15  승격: 어댑터를 /data/out/<name>_v3 로 복사 → 서빙 핫로드 → /health에 v3 확인
-T+2:30  제품 스위치: VM 메타데이터 VESSL_META_MODEL=v3 + isotonic 곡선 배포 → golden 1회 완주
+T+2:30  제품 스위치: `gcloud compute instances add-metadata sail-adapter
+        --metadata sail-vessl-model=v3` 후 reset (assets/startup.sh가 이 attr을
+        VESSL_META_MODEL로 주입). isotonic 곡선은 sail_adapter.py의
+        calibrate 지점(`p_accept**0.25` 식)을 곡선 룩업으로 교체해 배포 —
+        이 코드 교체가 이 트랙의 산출물 중 하나다. → golden 1회 완주
 T+2:45  게이트 실패 시: 서빙 v2 유지(제품 무중단), 어댑터는 보존하고 연속학습으로 이관
 ```
 

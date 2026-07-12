@@ -39,7 +39,7 @@
 
 ---
 
-### 파일: `sail_adapter.py` (1416줄) — **verbatim, 글자 그대로 사용**
+### 파일: `sail_adapter.py` (1424줄) — **verbatim, 글자 그대로 사용**
 
 ````python
 """ICML SAIL with Ralph — backend adapter (contract v2, cycle model).
@@ -871,7 +871,15 @@ def run_vessl_meta(title: str, cycle: dict[str, Any]) -> dict[str, Any]:
     if discussion:
         payload["discussion"] = discussion
     emit("step", "Area Chair (VESSL LoRA) is synthesizing the reviews and the discussion…")
-    resp = httpx.post(f"{VESSL_META_URL}/meta-review", json=payload, timeout=180.0)
+    # The serving workspace briefly returns 502/503 while hot-loading a new
+    # adapter — back off and retry instead of silently degrading to fallback.
+    for attempt in range(4):
+        resp = httpx.post(f"{VESSL_META_URL}/meta-review", json=payload, timeout=180.0)
+        if resp.status_code in (502, 503) and attempt < 3:
+            emit("step", "Score head is reloading — retrying in 8s…")
+            time.sleep(8)
+            continue
+        break
     resp.raise_for_status()
     emit("step", "Meta-review drafted — calibrating the selection score…")
     return resp.json()

@@ -30,19 +30,20 @@
 | POST `…/{id}/reply` {text, replyTo?} | 리버탈 → 대상 리뷰어 응답 |
 | POST `…/{id}/revision-draft` | AI 수정 헝크 초안 |
 | POST `…/{id}/revision-apply` {decisions:{hunkId:bool}} | 헝크 allow/deny → draftManuscript + revisionNote |
-| POST `…/{id}/manuscript` {text} | 원고 직접 편집(수동) — 스레드 메시지 없이 draft 갱신 |
+| POST `…/{id}/manuscript` {text, note?} | 원고 직접 편집(수동) — 스레드 메시지 없이 draft 갱신 (note는 백엔드가 현재 무시) |
 | DELETE `…/{id}/draft` | 대기 중 draft 폐기 |
 | POST `…/{id}/finalize` | AC 메타리뷰 + score + decision + deficiency (+decisionPost) |
 | POST `…/{id}/resubmit` | draft를 새 사이클 원고로 fresh 재제출 |
 | POST `…/{id}/jobs` {op, payload} → GET `/api/loop/jobs/{jobId}` | 비동기 잡 시작/폴링 (op: reply·revision-draft·finalize·resubmit) |
 | GET `/healthz` | `{status, papers, live, vessl, contract:"v2-cycles"}` |
 
-응답 본문은 항상 **LoopPaper 전체** (mock과 동일 형태) — UI는 mock/live를
-구분하지 않는다. 점수는 finalize 이전엔 절대 존재하지 않는다.
+응답 본문은 항상 **LoopPaper 전체** — UI는 mock/live를 구분하지 않는다.
+live는 optional 필드(decisionPost·fieldContext·리뷰 facet)를 추가로 내보내며,
+타입 계약(api/30)에 optional로 선언되어 있고 mock은 생략한다. 점수는 finalize 이전엔 절대 존재하지 않는다.
 
 ## 3. IndexedDB 영속화 (mock 모드 전용)
 
-아래 loopStorage.ts 가 유일한 스토리지 계층. DB `sail-loop` / 스토어 `papers`,
+아래 loopStorage.ts 가 유일한 스토리지 계층. DB `sail-ralph` / 스토어 `papers`,
 File 객체는 저장 전 제거(clean)하고 cycles 배열만 남긴다.
 
 

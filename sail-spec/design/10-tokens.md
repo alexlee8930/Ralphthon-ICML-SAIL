@@ -13,7 +13,8 @@ tailwind.config.js 의 시맨틱 토큰(surface, accent, ok, warn, muted, faint,
 border …)으로만 쓴다** — 컴포넌트에서 hex 하드코딩 금지.
 
 렌더링을 좌우하는 규칙:
-- 라이트("paper tone")가 기본, `.dark` 클래스로 다크 전환 (ThemeProvider가 토글).
+- 라이트("paper tone")가 기본, 다크 전환은 `<html data-theme="dark">` 속성
+  (ThemeProvider가 토글, tailwind darkMode도 이 selector — `.dark` 클래스가 아님).
 - 폰트: 본문 Inter, 제목·논문 serif = Source Serif 4, 코드 JetBrains Mono.
 - `--series-1..8`: 리뷰어 아바타/차트 시리즈 색.
 - shadow-card·rounded-card·rounded-input 등 커스텀 유틸은 tailwind.config.js
