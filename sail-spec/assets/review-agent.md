@@ -1,4 +1,4 @@
-# Review Agent — ICML SAIL with Ralph (Track 2 artifact)
+# Review Agent — ICML SAIL with Ralph (Track 2 submission · max 4 pages)
 
 - **Name/version**: SAIL Review Agent v1 (frozen 2026-07-12)
 - **Stack**: 3 parallel reviewer heads (Claude `claude-opus-4-8`, neutral — no personas)
@@ -8,6 +8,23 @@
   decision-logit accuracy 89.1%, AUC 0.965). Serving: VESSL L40S; product API on GCE.
 - **Reproducibility**: full rebuild spec in `sail-spec/` (this bundle);
   live endpoint `POST /api/loop/papers` → `POST …/finalize`.
+
+## Approach (why this design — every decision is measured, not vibed)
+
+Most review agents are a single LLM prompt. Ours splits the venue's actual decision
+process into heads with different epistemic jobs — **generative judgment where a
+current-knowledge model is strongest (reviewer), learned aggregation where 47k real
+OpenReview decisions are strongest (score/meta)** — and every calibration in between
+is derived from corpus measurements, not intuition:
+
+| Design decision | Measured evidence behind it |
+|---|---|
+| Trained score head ranks; reviews carry the signal | leave-one-out: removing one review moves the decision margin ±12; abstract edits move it ±0.4 |
+| Corpus-measured recency calibration (1,872-term maturity table), agent judgment excluded | topic prior measured at p_accept 0.99 (normalization) vs 0.003 (LLM agents) under identical neutral reviews; GAN share 6.1%→0.19% in-corpus |
+| Confidence handled by the harness, not trusted raw | measured: rating 6 flips 0.001→0.924 when reviewer confidence drops (head regresses to its 82%-accept prior) |
+| Claude reviewer (not the fine-tuned reviewer head) | the SFT reviewer trained on accept-only fulltexts scores rej-recall 0.08 — measured, so we refused to ship it |
+| Rank by continuous `pred`, not the clamped 1–99 score | 2-paper live dry-run: strong 0.3675 vs weak 0.0940 (4× separation on 4-page inputs) |
+| Grounding rules (no fabricated numbers; placeholder → rating 1) | red-team test: a one-line placeholder previously yielded a fabricated 99-score review; rules eliminate it |
 
 ## Procedure (what the agent does with a paper)
 
