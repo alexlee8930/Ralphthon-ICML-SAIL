@@ -7,6 +7,7 @@ TOKEN=$(curl -s -H "Metadata-Flavor: Google" "http://metadata.google.internal/co
 gcs() { curl -sf -H "Authorization: Bearer $TOKEN" "https://storage.googleapis.com/storage/v1/b/${SAIL_BUCKET:-sweetspot-ax-sail-adapter}/o/$1?alt=media" -o "$2"; }
 attr() { curl -sf -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/$1" || true; }
 VMODEL=$(attr sail-vessl-model); VMODEL=${VMODEL:-v2}   # 어댑터 스왑 스위치 (training/85 §2)
+SHEAD=$(attr sail-score-head); SHEAD=${SHEAD:-1}        # 학습 점수헤드 on/off (0 = 원래 p_accept 경로)
 gcs sail_adapter.py /opt/sail/sail_adapter.py
 gcs web.tar.gz /tmp/web.tar.gz
 gcs topic_maturity.json /opt/sail/topic_maturity.json || true  # 없으면 리센시 보정만 비활성(무해)
@@ -30,6 +31,7 @@ Environment=TOPIC_MATURITY_PATH=/opt/sail/topic_maturity.json
 Environment=ANTHROPIC_API_KEY=$(attr sail-anthropic-key)
 Environment=VESSL_META_URL=$(attr sail-vessl-url)
 Environment=VESSL_META_MODEL=$VMODEL
+Environment=SAIL_SCORE_HEAD=$SHEAD
 ExecStart=/opt/sail/venv/bin/python /opt/sail/sail_adapter.py
 Restart=always
 

@@ -64,6 +64,10 @@ VESSL_META_URL = os.environ.get(
     "VESSL_META_URL", "https://api-wsp-2udsccqmif6o.betelgeuse.cloud.vessl.ai"
 )
 VESSL_META_MODEL = os.environ.get("VESSL_META_MODEL", "v2")
+# Trained /score head as the primary scorer. It is calibrated on real conference
+# selectivity, so absolute scores read very low on demo papers — set to "0" to
+# use the original path (p_accept^0.25 calibration + rating-anchor blend).
+SAIL_SCORE_HEAD = os.environ.get("SAIL_SCORE_HEAD", "1") != "0"
 CLAUDE_MODEL = os.environ.get("SAIL_CLAUDE_MODEL", "claude-opus-4-8")
 LIVE = bool(ANTHROPIC_API_KEY)
 
@@ -1347,13 +1351,14 @@ def finalize(paper_id: str) -> dict[str, Any]:
         score: Optional[int] = None
         head_scored = False
         if LIVE:
-            try:
-                # trained score head first — already calibrated on the real
-                # selectivity distribution, so no rating-anchor blend needed
-                score = run_vessl_score(title, cyc)
-                head_scored = True
-            except Exception as e:  # noqa: BLE001
-                print(f"[sail] score head failed, falling back: {e}")
+            if SAIL_SCORE_HEAD:
+                try:
+                    # trained score head first — already calibrated on the real
+                    # selectivity distribution, so no rating-anchor blend needed
+                    score = run_vessl_score(title, cyc)
+                    head_scored = True
+                except Exception as e:  # noqa: BLE001
+                    print(f"[sail] score head failed, falling back: {e}")
             try:
                 meta = run_vessl_meta(title, cyc)
                 meta_text = meta.get("meta_review")
