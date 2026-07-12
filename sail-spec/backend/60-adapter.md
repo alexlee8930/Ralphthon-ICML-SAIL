@@ -39,7 +39,7 @@
 
 ---
 
-### 파일: `sail_adapter.py` (1467줄) — **verbatim, 글자 그대로 사용**
+### 파일: `sail_adapter.py` (1513줄) — **verbatim, 글자 그대로 사용**
 
 ````python
 """ICML SAIL with Ralph — backend adapter (contract v2, cycle model).
@@ -371,6 +371,26 @@ confidence 1-5 (ICLR scale), soundness/presentation/contribution each 1-4, and 1
 strengths bullets (real strengths grounded in the text).
 
 {fewshot}"""
+
+# Venue-aware review bar. "icml" (default) keeps the main-conference bar above.
+# "workshop" recalibrates for 2-4 page hackathon submissions: the format IS the
+# complete expected artifact, so brevity itself is not a flaw — this aligns the
+# agent's bar with how human judges grade event papers (not more generous:
+# real flaws still cost points).
+SAIL_VENUE = os.environ.get("SAIL_VENUE", "icml")
+if SAIL_VENUE == "workshop":
+    REVIEWER_SKILL = REVIEWER_SKILL.replace(
+        """A short but genuine research
+abstract or extended abstract IS reviewable: treat it as an early-stage submission, grade it down
+for what is missing (typically 2-4), and name concretely what a full manuscript must add.""",
+        """This submission is a 2-4 page workshop-style paper — that IS the complete expected
+format, not an early draft. Do NOT grade it down for brevity or for lacking main-conference
+completeness (exhaustive tables, many baselines, appendices). Judge what the format can show:
+a crisp question, a sound method at this scope, evidence that supports the claims made, and
+honest limitations. A strong 4-page paper merits 6-8. Grade down only for real flaws:
+confounded comparisons, overclaiming beyond the evidence, or missing method detail that
+would easily fit within 4 pages.""",
+    )
 
 REVIEW_SCHEMA = {
     "type": "object",
@@ -1488,6 +1508,32 @@ def resubmit(paper_id: str) -> dict[str, Any]:
 # --------------------------------------------------------------------------
 # Frontend (optional) — serve the built SPA from WEB_DIST
 # --------------------------------------------------------------------------
+
+# --------------------------------------------------------------------------
+# Standalone score endpoint — thin proxy to the VESSL score head, so consumers
+# get a stable GCP-owned URL without touching the model serving layer.
+# (kit docs/ENDPOINTS.md §1 — restored after today's redeploys overwrote it.)
+# --------------------------------------------------------------------------
+
+
+@app.post("/api/score")
+def api_score(body: dict = Body(...)) -> dict:
+    """POST {title, reviews[], venue?, abstract?, discussion?}
+    -> {pred: 0-1 selectivity, score: 0-100 calibrated}. Proxies
+    {VESSL_META_URL}/score (trained regression head, test_2023 Spearman 0.872)."""
+    try:
+        r = httpx.post(f"{VESSL_META_URL}/score", json={
+            "title": body.get("title", ""),
+            "venue": body.get("venue", "ICML 2026"),
+            "reviews": body.get("reviews") or [],
+            "abstract": body.get("abstract"),
+            "discussion": body.get("discussion"),
+        }, timeout=120.0)
+        r.raise_for_status()
+        return r.json()
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(503, f"score head unavailable: {e}")
+
 
 WEB_DIST = os.environ.get("WEB_DIST", "/opt/sail/web")
 

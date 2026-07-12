@@ -265,7 +265,7 @@ export default {
 # VITE_RALPH_API_URL=http://localhost:8100
 ````
 
-### 파일: `.gitignore` (7줄) — **verbatim, 글자 그대로 사용**
+### 파일: `.gitignore` (8줄) — **verbatim, 글자 그대로 사용**
 
 ````text
 node_modules
@@ -275,6 +275,7 @@ dist
 .omc
 sail-spec/SECRETS.local.md
 sail-spec/vendor/
+agent_reviews/
 ````
 
 ### 파일: `public/favicon.svg` (1줄) — **verbatim, 글자 그대로 사용**

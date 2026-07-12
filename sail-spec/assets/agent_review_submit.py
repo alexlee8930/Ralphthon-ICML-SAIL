@@ -51,7 +51,7 @@ def anthropic_key():
 def req(method, url, body=None, form=None, bearer=None, raw=False, timeout=180):
     data = (urllib.parse.urlencode(form).encode() if form
             else json.dumps(body).encode() if body is not None else None)
-    h = {} if form else {"content-type": "application/json"}
+    h = {"User-Agent": "sail-review-agent/1.0"} if form else {"content-type": "application/json", "User-Agent": "sail-review-agent/1.0"}
     if bearer:
         h["Authorization"] = f"Bearer {bearer}"
     r = urllib.request.Request(url, data=data, method=method, headers=h)
@@ -201,15 +201,30 @@ def cmd_prepare(args):
               f"O{p['originality']} overall {p['overall']}/6 conf {p['confidence']}")
         return p
 
+    def one_save(a):
+        try:
+            p = one(a)
+            (WORK / f"payload_{p['ordinal']}.json").write_text(json.dumps(p, ensure_ascii=False))
+            return p
+        except Exception as e:  # noqa: BLE001
+            print(f"  [#{a['ordinal']}] 준비 실패: {e} — 나머지는 계속")
+            return None
+
     with ThreadPoolExecutor(max_workers=3) as ex:
-        payloads = list(ex.map(one, asg))
+        payloads = [x for x in ex.map(one_save, asg) if x]
     (WORK / "payloads.json").write_text(json.dumps(payloads, ensure_ascii=False, indent=1))
-    print(f"준비 완료: {len(payloads)}건 → {WORK/'payloads.json'} (창 열리면 submit)")
+    print(f"준비 완료: {len(payloads)}/{len(asg)}건 (편당 payload_N.json은 완료 즉시 저장됨)")
 
 
 def cmd_submit(args):
     b = bearer()
-    payloads = json.loads((WORK / "payloads.json").read_text())
+    if (WORK / "payloads.json").exists():
+        payloads = json.loads((WORK / "payloads.json").read_text())
+    else:
+        payloads = [json.loads(f.read_text()) for f in sorted(WORK.glob("payload_*.json"))]
+    done_f = WORK / "submitted.json"
+    done = set(json.loads(done_f.read_text())) if done_f.exists() else set()
+    payloads = [p for p in payloads if p["ordinal"] not in done]
     url = (f"{OAR}/api/ralphthon/v1/test-track/reviews" if args.test
            else f"{OAR}/api/ralphthon/v1/agent-reviews")
     ok = 0
@@ -223,6 +238,8 @@ def cmd_submit(args):
             else:
                 d = req("POST", url, body=p, bearer=b)
             ok += 1
+            done.add(p["ordinal"])
+            done_f.write_text(json.dumps(sorted(done)))
             print(f"  [#{p['ordinal']}] OK submitted={d.get('submitted')} remaining={d.get('remaining')}")
         except urllib.error.HTTPError as e:
             detail = e.read().decode()[:300]
