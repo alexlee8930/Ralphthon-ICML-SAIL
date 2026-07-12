@@ -69,17 +69,39 @@ def http(method, url, body=None, form=None, headers=None, timeout=600):
             raise
 
 
+def sanitize(text):
+    """수집기 아티팩트 제거 — 이미지 로컬경로 마크다운, 'text truncated' 꼬리 등."""
+    lines = []
+    for ln in text.splitlines():
+        if re.match(r"!\[.*\]\(/(tmp|var)/", ln.strip()):
+            continue
+        if ln.strip().lower().startswith("text truncated"):
+            break  # 그 아래는 스크래퍼 부록(그림/표 목록)
+        lines.append(ln)
+    return "\n".join(lines)
+
+
 def claude_render(key, paper_text, pipeline):
-    body = {"model": "claude-opus-4-8", "max_tokens": 4096,
+    prompt = (f"PIPELINE OUTPUTS (authoritative for scores):\n"
+              f"{json.dumps(pipeline, ensure_ascii=False)[:24000]}\n\n"
+              f"PAPER TEXT:\n{paper_text[:28000]}\n\n"
+              f"---\nNow write the complete review using EXACTLY these official template "
+              f"sections, starting with '## Paper and Evidence Identity':\n{TEMPLATE_SECTIONS}")
+    body = {"model": "claude-opus-4-8", "max_tokens": 8192,
             "system": RENDER_SKILL,
-            "messages": [{"role": "user", "content":
-                f"Official template sections (use exactly these):\n{TEMPLATE_SECTIONS}\n\n"
-                f"PIPELINE OUTPUTS (authoritative for scores):\n{json.dumps(pipeline, ensure_ascii=False)[:24000]}\n\n"
-                f"PAPER TEXT:\n{paper_text[:28000]}"}]}
-    d = http("POST", "https://api.anthropic.com/v1/messages", body=body,
-             headers={"content-type": "application/json", "x-api-key": key,
-                      "anthropic-version": "2023-06-01"}, timeout=300)
-    return "".join(b.get("text", "") for b in d["content"] if b.get("type") == "text")
+            "messages": [{"role": "user", "content": prompt}]}
+    for attempt in range(2):
+        d = http("POST", "https://api.anthropic.com/v1/messages", body=body,
+                 headers={"content-type": "application/json", "x-api-key": key,
+                          "anthropic-version": "2023-06-01"}, timeout=300)
+        out = "".join(b.get("text", "") for b in d["content"] if b.get("type") == "text")
+        if "## Summary" in out and "## Scores" in out:
+            return out
+        body["messages"].append({"role": "assistant", "content": out})
+        body["messages"].append({"role": "user", "content":
+            "That did not follow the template. Output ONLY the review in the exact "
+            "official sections, starting with '## Paper and Evidence Identity'."})
+    return out
 
 
 def median(vals):
@@ -97,7 +119,7 @@ def main():
     args = ap.parse_args()
 
     p = Path(args.paper)
-    text = p.read_text(encoding="utf-8")
+    text = sanitize(p.read_text(encoding="utf-8"))
     key = load_key()
     sr = Path(args.selfreview) if args.selfreview else p.with_suffix("").with_suffix(".selfreview.md")
 
