@@ -16,7 +16,7 @@
 
 | # | 결함 | 실측 | 처방 |
 |---|---|---|---|
-| D1 | 리뷰어 SFT accept-only | val 249/249 채택 논문 (ICLR24/25+ICML25 소스) | ICLR 2018–23 리젝 8,506편 페어 투입 |
+| D1 | 리뷰어 SFT accept-only | val 249/249 채택 논문 + **kit S5 평가: acc 0.50, rej-recall 0.08** — "리젝 보강 전까지 학습하지 말 것" (kit SPEC 확정) | ICLR 2018–23 리젝 8,506편 페어 투입 (kit BACKLOG P1과 동일) |
 | D2 | 82:18 낙관 분포 | 코퍼스 38,703 vs 8,506 | (연도×결정) 층화 리웨이팅 |
 | D3 | reject⟺옛날 교락 | 중립리뷰에서 정규화 p=0.99 / LLM-agent p=0.003 | 시대매칭 accept 페어 + 입력에서 venue/연도 단서 제거 + 추론측 리센시 보정(backend/61) |
 | D4 | confidence→accept-prior 회귀 | rating6 conf5→2: p 0.001→0.924 | confidence는 학습 입력 유지, 하네스 review_floor에서 저확신=중립 처리 |
@@ -35,12 +35,22 @@
 
 ## 2. 3시간 창 (T+0 런치 — 병렬 3잡, 전부 vesslctl)
 
+> **kit 융합**: 커맨드 검증본·지뢰표·watch_job.sh는 ac-competition-kit을 그대로 쓴다
+> (ops/81 참조). **스모크 30스텝 통과 전 본학습 발사 금지** — 지뢰가 전부 스모크에서
+> 걸린다 (kit 하드 룰). 스모크 확인 항목: `[sanity] masked tokens: N/M` (N=0이면 즉사),
+> `attn: kernels-community/flash-attn2, packing: True`, 30스텝 내 loss 하강.
+
 ```
-T+0:00  런치 (ops/81 §6 뼈대 사용; --resourcespec은 P2에서 확인한 것)
- JOB-A 리뷰어 v2 : B200×4(또는 H100×8) DDP | Qwen3-8B LoRA | ctx 8k | reviewer-sft-v2
- JOB-B 메타 v3   : B200×2 | meta-sft-v3 | 층화 샘플러                → ~75–90분
- JOB-C 점수+캘리브: ×1 | 베이스 임베딩 재사용→헤드 재학습 + isotonic  → ~40분
-T+0:10~ job logs 폴링 감시. loss 발산 시 즉시 재런치 (버퍼 ~40분 내장)
+T+0:00  런치 (kit vessl/commands.sh 검증본 복붙 — 창작 금지)
+ JOB-A 리뷰어 v2 : H100×4 DDP | Qwen3-8B LoRA | ctx 8k | reviewer-sft-v2
+                   (기준 실측 13.2s/step @16k·4×H100 — 8k는 그 절반쯤)
+ JOB-B 메타 v3   : H100×2 | meta-sft-v3 | 층화 샘플러                → ~75–90분
+ JOB-C 점수+캘리브: ×1 | kit "예산모드"(max_len 4096, 1ep, 10k 서브샘플,
+                   실측 ~2.5h → 8k 재사용 임베딩이면 ~40분) + isotonic
+ ※ B200은 **미검증 경로** (cuda13 이미지 교체 + 스모크 재검증 필요 — kit 다운시프트표).
+   기본은 H100. GPU별 batch/ctx는 kit 다운시프트표를 따른다.
+T+0:05  JOB-A' 스모크 30스텝 → 통과 후에만 본학습 발사
+T+0:10~ watch_job.sh 블로킹 감시 (로그는 60-75분 지연 — job state·볼륨 산출물로 판단)
 T+1:45  게이트 1 (JOB-A): 리젝 held-out mean rating ≤4.5 AND accept held-out ≥6
 T+2:00  게이트 2 (JOB-B): test_2023 balanced-acc ≥ v2 + D3/D4 진단 재실행(격차 축소 확인)
 T+2:15  승격: 어댑터를 /data/out/<name>_v3 로 복사 → 서빙 핫로드 → /health에 v3 확인

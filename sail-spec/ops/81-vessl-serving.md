@@ -15,8 +15,18 @@ vesslctl billing show        # 크레딧·burn rate — 학습 전 반드시 확
 알려진 플랫폼 특성:
 - `vesslctl job logs --limit` 최대 1000. 로그 스트리밍(follow)은 INTERNAL_ERROR가 나므로
   폴링으로 감시한다.
+- **로그는 60-75분 지연 + print 버퍼링. 침묵≠사망** — 잡 생사는 job state와 볼륨
+  산출물로만 판단하고, 타임아웃 전 임의 kill 금지 (kit CLAUDE.md 실측).
 - 서빙 워크스페이스가 새 어댑터를 핫로드할 때 **/meta-review가 잠깐 503**을 낸다 —
   호출측은 8초 백오프 리트라이 (backend/60은 이미 처리).
+- 잡 create "Server error"류 일시 오류 → 20초 후 같은 커맨드 재시도.
+- 서빙 스택 구성(검증본): vLLM(:8001 멀티LoRA) + score_server(:8002, 8B+LoRA+head.pt)
+  + app(:8000 프록시). 80GB GPU: vLLM gpu-mem-util 0.70 / 48GB(L40S): 0.50 필수
+  (아니면 score_server OOM). 기동: `bash /data/serve/serve_vessl.sh`.
+
+> **동반 하네스**: `github.com/juneyoon-sweetspot/ac-competition-kit` — VESSL 학습·서빙
+> 트랙의 원본 하네스 (검증된 커맨드 vessl/commands.sh, 지뢰표, watch_job.sh, GCE 원샷
+> 배포 backend/deploy_gce.sh + smoke.sh). training/85는 이 kit과 함께 쓰도록 설계됨.
 
 ## 2. 서빙 워크스페이스 (메타+점수 헤드)
 
@@ -44,6 +54,18 @@ vesslctl billing show        # 크레딧·burn rate — 학습 전 반드시 확
 ```
 
 응답: `{"meta_review": "…", "p_accept": 0.83, "logit_margin": 1.75}`
+
+**모델 핀 (ac-competition-kit 2026-07-12 확정)**: `model:"v21"`이 채택 레시피 —
+로짓 정확도 89.1%/AUC 0.965, 생성 길이 p50 1,829자(요청 1750). v21은 프롬프트에
+"Aim for roughly 1750 characters." 조건화가 필요하며 **서빙(app.py)이 자동 처리**한다.
+v2는 폴백 경로. 어댑터 HF: `younjihoon/ac-metareview-v21`.
+
+### POST /score — 학습된 점수헤드 (frozen v2 backbone + regression head)
+
+요청: `{"title", "venue", "abstract", "reviews": [meta-review와 동일 포맷]}`
+응답: `{"pred": 0.42, "score": 31.1}` — score는 실제 selectivity 분포에 캘리브레이션된
+1-99 스케일. **test_2023 Spearman 0.872, 수상작 백분위 중앙 98.7.** 어댑터는 이걸
+1순위로 쓰고(앵커 블렌드 불필요), 실패 시 p_accept^0.25 체인으로 폴백한다 (backend/60).
 
 규칙 (어댑터가 이미 준수 — 재구현 시에도 동일하게):
 - reviews의 Rating/Confidence 헤더는 **ICLR 정본 앵커 문구**를 그대로 쓴다

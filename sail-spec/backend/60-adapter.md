@@ -39,7 +39,7 @@
 
 ---
 
-### 파일: `sail_adapter.py` (1424줄) — **verbatim, 글자 그대로 사용**
+### 파일: `sail_adapter.py` (1462줄) — **verbatim, 글자 그대로 사용**
 
 ````python
 """ICML SAIL with Ralph — backend adapter (contract v2, cycle model).
@@ -828,6 +828,35 @@ def field_context(title: str, abstract: str) -> tuple[str, dict[str, Any]]:
     return note, audit
 
 
+def run_vessl_score(title: str, cycle: dict[str, Any]) -> int:
+    """Trained selectivity score head (frozen v2 backbone + regression head,
+    test_2023 Spearman 0.872, award-percentile 98.7). Serving: /score on the
+    same workspace. Raises on any failure — caller falls back to the
+    p_accept^0.25 calibration chain."""
+    reviews_fmt = []
+    for r in cycle["reviews"]:
+        rating = max(1, min(10, int(r["rating"])))
+        head = f"Rating: {rating}: {RATING_ANCHORS[rating]} | Confidence: 4: {CONFIDENCE_ANCHOR}\n"
+        if r.get("body"):
+            reviews_fmt.append(head + r["body"])
+            continue
+        issues = "\n".join(
+            f"- {c['severity']} | {c['section']} | {c['body']}"
+            for c in cycle["comments"]
+            if c.get("reviewer") == r["reviewer"]
+        )
+        reviews_fmt.append(
+            head + f"[Summary Of The Paper] {r['summary']}\n[Strength And Weaknesses]\n{issues}"
+        )
+    emit("step", "Trained score head is reading the reviews…")
+    resp = httpx.post(f"{VESSL_META_URL}/score", json={
+        "title": title, "venue": "ICML 2026", "reviews": reviews_fmt,
+        "abstract": abstract_for_meta(title, cycle["manuscript"].get("text") or ""),
+    }, timeout=120.0)
+    resp.raise_for_status()
+    return max(1, min(99, round(float(resp.json()["score"]))))
+
+
 def run_vessl_meta(title: str, cycle: dict[str, Any]) -> dict[str, Any]:
     reviews_fmt = []
     for r in cycle["reviews"]:
@@ -1360,20 +1389,29 @@ def finalize(paper_id: str) -> dict[str, Any]:
 
         meta_text: Optional[str] = None
         score: Optional[int] = None
+        head_scored = False
         if LIVE:
+            try:
+                # trained score head first — already calibrated on the real
+                # selectivity distribution, so no rating-anchor blend needed
+                score = run_vessl_score(title, cyc)
+                head_scored = True
+            except Exception as e:  # noqa: BLE001
+                print(f"[sail] score head failed, falling back: {e}")
             try:
                 meta = run_vessl_meta(title, cyc)
                 meta_text = meta.get("meta_review")
-                if isinstance(meta.get("p_accept"), (int, float)):
+                if score is None and isinstance(meta.get("p_accept"), (int, float)):
                     score = calibrate_p_accept(float(meta["p_accept"]))
             except Exception as e:  # noqa: BLE001
                 print(f"[sail] vessl meta head failed: {e}")
         if score is None:
             score = CYCLE_SCORES[min(cyc["cycle"] - 1, len(CYCLE_SCORES) - 1)]
-        ratings = [r["rating"] for r in cyc["reviews"] if isinstance(r.get("rating"), int)]
-        if ratings:
-            anchor = (sum(ratings) / len(ratings)) * 10
-            score = max(1, min(99, round(0.6 * score + 0.4 * anchor)))
+        if not head_scored:
+            ratings = [r["rating"] for r in cyc["reviews"] if isinstance(r.get("rating"), int)]
+            if ratings:
+                anchor = (sum(ratings) / len(ratings)) * 10
+                score = max(1, min(99, round(0.6 * score + 0.4 * anchor)))
         if meta_text is None:
             applied = sum(1 for h in (cyc.get("pendingRevision", {}).get("hunks") or []) if h.get("decision") == "allowed")
             denied = sum(1 for h in (cyc.get("pendingRevision", {}).get("hunks") or []) if h.get("decision") == "denied")
