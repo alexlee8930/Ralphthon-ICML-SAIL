@@ -33,7 +33,7 @@ gcloud config set compute/zone asia-northeast3-a
 | 머신타입 | `e2-small` (10GB pd-standard, debian-12) |
 | 버킷 | `gs://sweetspot-ax-sail-adapter` |
 | 포트 | `8100` (SPA+API 겸용) |
-| 메타데이터 키 | `sail-anthropic-key`, `sail-vessl-url` |
+| 메타데이터 키 | `sail-anthropic-key`, `sail-vessl-url`, `sail-vessl-model` (기본 v2 — **현재 채택 레시피는 v21**, ops/81 참조) |
 
 ## 2. 최초 1회: 버킷·방화벽·VM 생성
 

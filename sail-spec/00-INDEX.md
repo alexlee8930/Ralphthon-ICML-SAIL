@@ -86,6 +86,7 @@ VESSL 서빙 Qwen3-8B LoRA 메타/점수 헤드 · Claude claude-opus-4-8 리뷰
 | `ops/81-vessl-serving.md` | vesslctl·서빙 API 계약(/meta-review)·Jupyter API·HF 데이터셋 지도 |
 | `training/85-gpu-plan.md` | 3시간 재학습 플랜 + 무기한 체크포인트 연속학습 + 평가 게이트 |
 | `90-harness.md` | 표준 지시문·에이전트 분배·시크릿·리허설 프로토콜·보조 명령 |
+| `95-hackathon-track2.md` | 공식 Track 2 프로토콜 — 딜리버러블·리뷰 템플릿·10편 상관 평가 분석·G6 드라이런 |
 | `assets/topic_maturity.json` | 리센시 보정 테이블 (1,872 용어, 재생성 불필요 — 그대로 배포) |
 | `assets/build_topic_maturity.py` | 위 테이블 빌더 (코퍼스 갱신 시에만) |
 | `assets/startup.sh` | GCE startup-script (ops/80이 사용) |
