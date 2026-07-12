@@ -49,12 +49,30 @@ assets/hackathon_score.py로 채점하고(셀프리뷰는 .selfreview.md — 주
 논문별 구조화 리뷰. 사람 점수 공개 시 --spearman으로 상관을 계산해 STATE.md에 기록.
 ```
 
-## 변형 2 — GPU 재학습 트랙
+## 변형 2 — GPU 재학습 트랙 (단축 경로 기준)
 
 ```
-training/85-gpu-plan.md가 GOAL이다. vendor/ac-competition-kit/의 CLAUDE.md
-지뢰표·vessl/commands.sh 검증본·watch_job.sh를 그대로 사용하라(커맨드 창작 금지).
-사전 스테이징 P1~P6 → 스모크 30스텝 통과 후에만 본학습 발사 → 게이트 1·2 통과 시만
-승격, 실패 시 v2 유지. 3시간 후에는 체크포인트 보존 연속학습으로 전환하고
-운영자의 terminate 지시까지 유지하라. 크레딧을 승격 사이클마다 STATE.md에 기록.
+training/85-gpu-plan.md가 GOAL이며, §1.5 단축 경로부터 시작한다 — 데이터와 검증
+커맨드는 이미 준비되어 있으니 새로 만들지 마라. 커맨드 창작 금지: 발사·평가는
+vendor/ac-competition-kit/BACKLOG.md와 vessl/commands.sh의 검증본을 글자 그대로,
+막히면 kit CLAUDE.md 지뢰표부터 대조한다.
+
+순서:
+1. vesslctl billing show — §1.5 크레딧 발사 규칙 적용. 잔액이 (동시 잡 시간당 합계
+   × ETA×1.5 + 서빙 $1.8/hr)에 못 미치면 잡을 직렬화하고 운영자에게 충전을 요청하되,
+   그동안 가능한 무과금 작업을 먼저 진행한다.
+2. P1 (최우선): kit BACKLOG P1 발사 커맨드 그대로 — astage-v2, 2×H100
+   (resourcespec-ch100x2), 데이터 /data/sft_astage_v2, ~4.5h. 발사 즉시 STATE.md에
+   job-ID·시각 기록. 감시는 로그가 아니라 job state·볼륨 산출물로 (로그 60-75분 지연,
+   침묵≠사망, 타임아웃 전 임의 kill 금지).
+3. P1 완료 → BACKLOG의 평가 체인(연도제거 s5 → gen_icml_vllm t0.8 → astage_s5_prep)
+   → 게이트: AUC ≥0.65 · ≤3점 비율 ≥10% · 하류 ≥0.79. 통과 시에만 서빙 반영,
+   실패 시 어댑터 보존만 하고 STATE에 기록.
+4. 크레딧 여유 시 P2: commands.sh 블록 3을 --adapter /data/out/v21/final로 바꿔
+   1×H100 발사. 게이트 Spearman ≥0.85 통과 시 SCORE_ADAPTER 교체 후 재기동.
+5. 이후 85 §3 연속학습 모드: 체크포인트 보존, epoch마다 게이트 평가, 통과 시에만
+   승격. 운영자의 terminate 지시까지 유지하고 승격 사이클마다 잔액을 STATE에 기록.
+
+금지(폐쇄 트랙): 가상 데이터 학습 · 길이지시 프롬프트 실험 · test_2023 전문 학습.
+매 액션 후 STATE.md 갱신 — GPU 학습 트랙 섹션의 빈칸(job-ID·수치)을 채워라.
 ```
