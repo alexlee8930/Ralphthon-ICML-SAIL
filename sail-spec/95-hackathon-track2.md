@@ -96,6 +96,16 @@ strong pred 0.3675/rating 4.0 vs weak pred 0.0940/rating 1.67. 순위 정방향 
 
 ## 6. 이벤트 당일 실행 카드
 
+**심사 기준 스위치 (미검증 — 재검증 전 사용 금지)**: `sail-venue=workshop` 모드가 존재하나
+A/B(2026-07-12, 스텁 입력)에서 오히려 하락(ratings [2,3,2])했다 — 진짜 4쪽 논문으로
+재검증해 통과할 때만 전환할 것:
+```bash
+gcloud compute instances add-metadata sail-adapter --project sweetspot-ax \
+  --zone asia-northeast3-a --metadata sail-venue=workshop && \
+gcloud compute instances reset sail-adapter --project sweetspot-ax --zone asia-northeast3-a
+# (검증: A/B 실측은 아래 §6.5. 행사 후 sail-venue=icml로 원복)
+```
+
 ```bash
 # 논문들을 papers/ 에 <이름>.md 로, 셀프리뷰는 <이름>.selfreview.md 로 저장
 python3 sail-spec/assets/hackathon_score.py papers/ --base http://<VM_IP>:8100

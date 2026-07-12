@@ -33,7 +33,7 @@ gcloud config set compute/zone asia-northeast3-a
 | 머신타입 | `e2-small` (10GB pd-standard, debian-12) |
 | 버킷 | `gs://sweetspot-ax-sail-adapter` |
 | 포트 | `8100` (SPA+API 겸용) |
-| 메타데이터 키 | `sail-anthropic-key`, `sail-vessl-url`, `sail-vessl-model` (기본 v2), `sail-score-head` (기본 1 — **0이면 학습 점수헤드 대신 원래 p_accept+앵커 경로**. 데모는 0 권장: 학습 헤드는 실학회 눈금이라 절대점수가 매우 짜게 나옴) |
+| 메타데이터 키 | `sail-anthropic-key`, `sail-vessl-url`, `sail-vessl-model` (기본 v2), `sail-score-head` (기본 1 — **0이면 학습 점수헤드 대신 원래 p_accept+앵커 경로**. 데모는 0 권장: 학습 헤드는 실학회 눈금이라 절대점수가 매우 짜게 나옴), `sail-venue` (기본 icml — **workshop이면 리뷰어가 4쪽 행사 바로 심사**. 해커톤 당일만 workshop, 95 §6) |
 
 ## 2. 최초 1회: 버킷·방화벽·VM 생성
 
