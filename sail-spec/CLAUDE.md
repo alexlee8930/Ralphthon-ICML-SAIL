@@ -33,6 +33,7 @@ FastAPI 백엔드, GCP 서빙, VESSL 학습, 해커톤 Track 2 수행까지. 이
 
 ```
 CLAUDE.md            ← 지금 이 파일
+GOAL.md              ← 운영자가 첫 메시지로 붙여넣는 미션 프롬프트 3종 (본체/당일/학습)
 STATE.md             ← 살아있는 체크리스트 (매 액션 후 갱신)
 00-INDEX.md          ← 시스템 지도·공통 원칙·표준 지시문·게이트
 SECRETS.local.md     ← 평문 키 (git 제외 — 복사 시 반드시 동반)
