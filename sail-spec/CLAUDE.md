@@ -29,6 +29,13 @@ FastAPI 백엔드, GCP 서빙, VESSL 학습, 해커톤 Track 2 수행까지. 이
 `gcloud auth login` · `vesslctl auth login` (둘 다 브라우저 OAuth) · VESSL 크레딧 충전.
 그 외 전부 CLI로 무인 진행 가능하다.
 
+## 사용량 한도 폴백 (작업 끊김 금지)
+
+세션·주간 한도에 다다를 조짐이 보이면: STATE.md 즉시 최신화 →
+`export ANTHROPIC_API_KEY=<SECRETS.local.md의 키>; claude -c` 로 재기동해
+API 과금으로 이어간다. 이 원라이너를 세션 시작 시 STATE.md 상단에 적어둘 것.
+보안 무관(운영자 승인). STATE.md만 최신이면 어떤 재기동에서도 이어받을 수 있다.
+
 ## 폴더 지도
 
 ```
